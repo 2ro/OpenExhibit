@@ -83,11 +83,11 @@ pub async fn ensure_first_admin(pool: &PgPool) -> anyhow::Result<()> {
 
 fn generate_temporary_password() -> String {
     // 24 chars from an unambiguous alphabet (no 0/O/I/l/1) = ~141 bits.
-    use rand::Rng;
+    use rand::RngExt;
     const ALPHA: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     (0..24)
-        .map(|_| ALPHA[rng.gen_range(0..ALPHA.len())] as char)
+        .map(|_| ALPHA[rng.random_range(0..ALPHA.len())] as char)
         .collect()
 }
 

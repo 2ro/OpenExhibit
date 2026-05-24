@@ -376,11 +376,10 @@ async fn new_post(
 /// (e.g. `external_link`) get an auto-generated `/<key>-<random>/` so the
 /// row is well-formed without ever asking the user about it.
 async fn insert_stub(pool: &PgPool, format: &str) -> AppResult<i32> {
-    use rand::Rng;
     let url = if formats::find(format).capabilities().requires_url_slug {
         "/untitled/".to_string()
     } else {
-        let suffix: u32 = rand::thread_rng().gen();
+        let suffix: u32 = rand::random();
         format!("/{format}-{suffix:08x}/")
     };
     let row: (i32,) = sqlx::query_as(

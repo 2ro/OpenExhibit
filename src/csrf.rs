@@ -4,7 +4,7 @@
 
 use actix_session::Session;
 use base64::Engine;
-use rand::{thread_rng, RngCore};
+use rand::Rng;
 
 use crate::error::{AppError, AppResult};
 
@@ -18,7 +18,7 @@ pub fn get_or_create(session: &Session) -> AppResult<String> {
         return Ok(existing);
     }
     let mut bytes = [0u8; 32];
-    thread_rng().fill_bytes(&mut bytes);
+    rand::rng().fill_bytes(&mut bytes);
     let token = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(bytes);
     session
         .insert(SESSION_KEY, &token)

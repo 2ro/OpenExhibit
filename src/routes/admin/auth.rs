@@ -5,7 +5,8 @@ use actix_session::Session;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use askama::Template;
 use base64::Engine;
-use rand::RngCore;
+use rand::Rng;
+
 use serde::Deserialize;
 use sqlx::PgPool;
 
@@ -186,7 +187,7 @@ async fn forgot_post(
 
     if let Some(user) = user_opt {
         let mut bytes = [0u8; 32];
-        rand::thread_rng().fill_bytes(&mut bytes);
+        rand::rng().fill_bytes(&mut bytes);
         let token = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(bytes);
         let expires = chrono::Utc::now() + chrono::Duration::hours(1);
 

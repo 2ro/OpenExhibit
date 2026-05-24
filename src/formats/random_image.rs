@@ -1,5 +1,5 @@
 use askama::Template;
-use rand::seq::SliceRandom;
+use rand::seq::IndexedRandom;
 
 use crate::error::AppResult;
 use crate::models::exhibit::Exhibit;
@@ -33,7 +33,7 @@ impl ExhibitFormat for Format {
         media: Vec<MediaView>,
         base: BaseFields,
     ) -> AppResult<String> {
-        let chosen = media.choose(&mut rand::thread_rng()).cloned();
+        let chosen = media.choose(&mut rand::rng()).cloned();
         Ok(Page {
             base,
             content,

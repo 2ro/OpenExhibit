@@ -406,7 +406,6 @@ fn sanitize_filename(name: &str) -> String {
 /// extension. Prevents the (admin-side) footgun where two uploads with names
 /// that sanitize to the same string would silently overwrite each other.
 fn unique_filename_in(dir: &Path, name: &str) -> String {
-    use rand::Rng;
     if !dir.join(name).exists() {
         return name.to_string();
     }
@@ -415,7 +414,7 @@ fn unique_filename_in(dir: &Path, name: &str) -> String {
         _ => (name, String::new()),
     };
     for _ in 0..16 {
-        let suffix: u32 = rand::thread_rng().gen();
+        let suffix: u32 = rand::random();
         let candidate = format!("{stem}-{suffix:08x}{ext}");
         if !dir.join(&candidate).exists() {
             return candidate;
