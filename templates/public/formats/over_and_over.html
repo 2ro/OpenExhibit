@@ -1,0 +1,20 @@
+{% extends "public/layout.html" %}
+
+{% block exhibit_body %}
+<div id="img-container" class="over_and_over">
+  {%- if !content.is_empty() %}
+  <div class="text">{{ content|safe }}</div>
+  {%- endif %}
+  {%- for m in media %}
+  <div class="picture">
+    {%- if m.is_video %}
+    <video controls preload="metadata" src="{{ m.file_url }}"></video>
+    {%- else if m.is_audio %}
+    <audio controls preload="metadata" src="{{ m.file_url }}"></audio>
+    {%- else %}
+    <img src="{{ m.file_url }}" alt="{{ m.title }}" width="{{ m.width }}" height="{{ m.height }}">
+    {%- endif %}
+  </div>
+  {%- endfor %}
+</div>
+{% endblock %}

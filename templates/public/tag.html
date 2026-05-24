@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="{{ base.site_lang }}">
+<head>
+<meta charset="utf-8">
+<title>Tag: {{ tag_name }} : {{ base.obj_name }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/static/css/public.css" type="text/css">
+</head>
+<body class="tag tag-{{ tag_name }}">
+<input type="checkbox" id="nav-toggle-input" hidden>
+<label for="nav-toggle-input" class="index-toggle">Menu</label>
+<div id="index">
+<div class="container">
+
+<div class="top">{{ base.obj_itop|safe }}</div>
+{% include "public/nav.html" %}
+<div class="bot">{{ base.obj_ibot|safe }}</div>
+
+</div>
+</div>
+
+<div id="exhibit">
+<div class="container">
+
+<div class="top"><!-- --></div>
+<div id="img-container" class="tag_display">
+  <h2>Tag: {{ tag_name }}</h2>
+  {%- if exhibits.is_empty() %}
+  <p>No exhibits tagged <strong>{{ tag_name }}</strong>.</p>
+  {%- else %}
+  <ul class="thumbs">
+  {%- for ex in exhibits %}
+    <li>
+      <a href="{{ ex.url }}">
+        {%- if let Some(t) = ex.thumb_url %}
+        <img src="{{ t }}" alt="{{ ex.title }}">
+        {%- endif %}
+        <div class="captioning"><span class="title">{{ ex.title }}</span></div>
+      </a>
+    </li>
+  {%- endfor %}
+  </ul>
+  {%- endif %}
+</div>
+
+</div>
+</div>
+</body>
+</html>

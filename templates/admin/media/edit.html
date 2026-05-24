@@ -1,0 +1,25 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>Edit media</h1>
+  <a href="/admin/exhibits/{{ exhibit.id }}/media">&larr; Media list</a>
+</div>
+{%- if media.is_image() %}
+<p><img src="/files/dimgs/{{ media.ref_id }}/proportional_400_{{ media.file }}" alt=""></p>
+{%- endif %}
+<form method="post" action="/admin/exhibits/{{ exhibit.id }}/media/{{ media.id }}/edit" class="form-stack">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <label><span>File</span><input type="text" value="{{ media.file }}" disabled></label>
+  <label><span>Title</span><input type="text" name="title" value="{{ media.title }}"></label>
+  <label><span>Caption (HTML)</span><textarea name="caption" rows="4">{{ media.caption }}</textarea></label>
+  <label><span>Order</span><input type="number" name="ord" value="{{ media.ord }}"></label>
+  <label class="checkbox">
+    <input type="checkbox" name="hidden" value="1"{% if media.hidden %} checked{% endif %}>
+    <span>Hidden</span>
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="primary">Save</button>
+    <a href="/admin/exhibits/{{ exhibit.id }}/media" class="btn">Cancel</a>
+  </div>
+</form>
+{% endblock %}

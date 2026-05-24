@@ -1,0 +1,79 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>Media</h1>
+  <span class="muted">{{ total }} file{% if total != 1 %}s{% endif %}{% if q.len() > 0 %} matching <q>{{ q }}</q>{% endif %}</span>
+</div>
+
+<form method="get" action="/admin/media" class="form-inline filters">
+  <label>
+    <span>Search</span>
+    <input type="search" name="q" value="{{ q }}" placeholder="title, filename, exhibit…">
+  </label>
+  <label>
+    <span>Type</span>
+    <select name="kind">
+      <option value="all"{% if kind == "all" %} selected{% endif %}>All</option>
+      <option value="image"{% if kind == "image" %} selected{% endif %}>Images</option>
+      <option value="video"{% if kind == "video" %} selected{% endif %}>Video</option>
+      <option value="audio"{% if kind == "audio" %} selected{% endif %}>Audio</option>
+      <option value="other"{% if kind == "other" %} selected{% endif %}>Other</option>
+    </select>
+  </label>
+  <label class="checkbox">
+    <input type="checkbox" name="hidden" value="1"{% if show_hidden %} checked{% endif %}>
+    <span>Show hidden</span>
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="primary">Filter</button>
+    <a href="/admin/media" class="btn">Reset</a>
+  </div>
+</form>
+
+{%- if rows.is_empty() %}
+<p class="empty">No media match the current filters.</p>
+{%- else %}
+<div class="table-wrap"><table class="data">
+  <thead><tr>
+    <th></th><th>File</th><th>Title</th><th>Exhibit</th>
+    <th>Type</th><th>Dim</th><th>Size</th><th>Uploaded</th><th>Actions</th>
+  </tr></thead>
+  <tbody>
+  {%- for m in rows %}
+    <tr{% if m.hidden %} class="hidden-row"{% endif %}>
+      <td class="thumb-cell" data-label="">{%- if m.is_image() %}<img src="/files/dimgs/{{ m.ref_id }}/proportional_120_{{ m.file }}" alt="">{%- endif %}</td>
+      <td data-label="File"><code>{{ m.file }}</code></td>
+      <td data-label="Title">{{ m.title }}</td>
+      <td data-label="Exhibit">
+        {%- if let Some(eid) = m.exhibit_id %}
+          <a href="/admin/exhibits/{{ eid }}/media">{{ m.exhibit_title.as_deref().unwrap_or("(untitled)") }}</a>
+        {%- else %}
+          <span class="muted">&mdash;</span>
+        {%- endif %}
+      </td>
+      <td data-label="Type">{{ m.mime }}</td>
+      <td data-label="Dim">{% if m.width > 0 %}{{ m.width }}×{{ m.height }}{% else %}&mdash;{% endif %}</td>
+      <td data-label="Size">{{ m.bytes }}</td>
+      <td data-label="Uploaded">{%- if let Some(t) = m.uploaded_at %}{{ t.format("%Y-%m-%d") }}{%- endif %}</td>
+      <td class="actions" data-label="Actions">
+        {%- if let Some(eid) = m.exhibit_id %}
+          <a href="/admin/exhibits/{{ eid }}/media/{{ m.id }}/edit">Edit</a>
+          <a href="/admin/exhibits/{{ eid }}/media/{{ m.id }}/confirm-delete" class="danger">Delete</a>
+        {%- else %}
+          <span class="muted">orphan</span>
+        {%- endif %}
+      </td>
+    </tr>
+  {%- endfor %}
+  </tbody>
+</table></div>
+
+{%- if total_pages > 1 %}
+<nav class="pagination">
+  {%- if page > 1 %}<a href="?q={{ q }}&kind={{ kind }}{% if show_hidden %}&hidden=1{% endif %}&page={{ page - 1 }}">&larr; Prev</a>{%- endif %}
+  <span>Page {{ page }} of {{ total_pages }}</span>
+  {%- if page < total_pages %}<a href="?q={{ q }}&kind={{ kind }}{% if show_hidden %}&hidden=1{% endif %}&page={{ page + 1 }}">Next &rarr;</a>{%- endif %}
+</nav>
+{%- endif %}
+{%- endif %}
+{% endblock %}

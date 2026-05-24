@@ -1,0 +1,58 @@
+// Horizontal-scroll strip. Native scrollbar on desktop, touch-swipe on mobile.
+// `overflow-x: auto` + scroll-snap for snappy paging.
+
+.horizontal {
+    // Let the strip use the full content width, not just 600px.
+    .text { max-width: 600px; }
+}
+
+.horizontal .strip {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;        // iOS momentum
+    overscroll-behavior-x: contain;           // don't trigger browser back-swipe
+    padding-bottom: 12px;                     // room beneath items for scrollbar
+    margin-bottom: 1em;
+    scrollbar-color: #888 transparent;        // Firefox: subtle thumb
+}
+
+.horizontal .strip::-webkit-scrollbar { height: 8px; }
+.horizontal .strip::-webkit-scrollbar-track { background: transparent; }
+.horizontal .strip::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+}
+.horizontal .strip::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.horizontal .strip .frame {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    line-height: 0;
+}
+
+.horizontal .strip .frame img,
+.horizontal .strip .frame video {
+    display: block;
+    height: 60vh;
+    max-height: 600px;
+    width: auto;
+    max-width: none;
+}
+
+.horizontal .strip .frame .captioning {
+    line-height: 1.3em;
+    padding-top: 4px;
+}
+
+// Mobile: shorter and full-bleed.
+@media (max-width: 768px) {
+    .horizontal .strip .frame img,
+    .horizontal .strip .frame video {
+        height: 50vh;
+    }
+}

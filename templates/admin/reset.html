@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Set new password : OpenExhibit Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="/static/css/admin.css" type="text/css">
+</head>
+<body class="login-page">
+<main class="login-main">
+  <h1>Set new password</h1>
+  {%- if let Some(e) = error %}
+  <div class="flash error">{{ e }}</div>
+  {%- endif %}
+  <form method="post" action="/admin/reset/{{ token }}" class="login-form">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <label>
+      <span>New password (min 10 chars)</span>
+      <input type="password" name="password" required minlength="10" autofocus>
+    </label>
+    <label>
+      <span>Confirm</span>
+      <input type="password" name="confirm" required minlength="10">
+    </label>
+    <button type="submit">Set password</button>
+  </form>
+</main>
+</body>
+</html>

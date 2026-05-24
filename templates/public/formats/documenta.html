@@ -1,0 +1,40 @@
+{% extends "public/layout.html" %}
+
+{% block exhibit_body %}
+<div id="img-container" class="documenta">
+  {%- if !content.is_empty() %}
+  <div class="text">{{ content|safe }}</div>
+  {%- endif %}
+  <div class="documenta-grid">
+  {%- for m in media %}
+    <div class="cell">
+      {%- if m.is_video %}
+      <video controls preload="metadata" src="{{ m.file_url }}"></video>
+      {%- else if m.is_audio %}
+      <audio controls preload="metadata" src="{{ m.file_url }}"></audio>
+      {%- else %}
+      <a href="#img-{{ m.id }}">
+        <img src="{{ m.thumb_url }}" alt="{{ m.title }}" width="{{ m.thumb_w }}" height="{{ m.thumb_h }}">
+      </a>
+      {%- endif %}
+      {%- if !m.title.is_empty() %}<div class="captioning"><span class="title">{{ m.title }}</span></div>{% endif %}
+    </div>
+  {%- endfor %}
+  </div>
+</div>
+
+{%- for m in media %}
+  {%- if !m.is_video && !m.is_audio %}
+<div class="lightbox" id="img-{{ m.id }}" role="dialog" aria-label="{{ m.title }}">
+  <a class="lb-close-zone" href="#_" aria-label="Close"></a>
+  <a class="lb-prev" href="#img-{{ m.prev_id }}" aria-label="Previous">‹</a>
+  <a class="lb-next" href="#img-{{ m.next_id }}" aria-label="Next">›</a>
+  <a class="lb-close" href="#_" aria-label="Close">×</a>
+  <a class="lb-img" href="#_" aria-label="Close">
+    <img src="{{ m.file_url }}" alt="{{ m.title }}">
+    {%- if !m.caption.is_empty() %}<span class="lb-caption">{{ m.caption|safe }}</span>{% endif %}
+  </a>
+</div>
+  {%- endif %}
+{%- endfor %}
+{% endblock %}

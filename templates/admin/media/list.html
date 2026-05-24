@@ -1,0 +1,83 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ exhibit.title }} <span class="page-header__count">{{ media.len() }} item{% if media.len() != 1 %}s{% endif %}</span></h1>
+  <div class="page-header__actions">
+    <a href="/admin/exhibits/{{ exhibit.id }}/edit" class="btn btn--ghost">&larr; Back to exhibit</a>
+  </div>
+</div>
+
+<form method="post" action="/admin/exhibits/{{ exhibit.id }}/media" enctype="multipart/form-data" class="form-stack upload">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <label>
+    <span>Upload images (jpg, png, gif, webp, mp4)</span>
+    <input type="file" name="files" multiple accept="image/jpeg,image/png,image/gif,image/webp,video/mp4">
+    <small>Drop multiple at once. EXIF orientation is honored; derivatives are generated on demand.</small>
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="primary upload-submit">
+      <span class="label">Upload</span>
+      <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    </button>
+  </div>
+</form>
+
+{%- if media.is_empty() %}
+<div class="empty">No media yet. Drop some files above to get started.</div>
+{%- else %}
+
+<p class="help">Reorder by editing the order number on a card and clicking <em>Save order</em>, or nudge a single item with ▲ ▼.</p>
+
+<form method="post" action="/admin/exhibits/{{ exhibit.id }}/media/reorder" class="exhibits-form">
+<input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+<ul class="media-grid">
+{%- for m in media %}
+  <li class="media-card{% if m.hidden %} media-card--hidden{% endif %}">
+    <div class="media-card__thumb">
+      {%- if m.is_image() %}
+      <img src="/files/dimgs/{{ m.ref_id }}/proportional_400_{{ m.file }}" alt="{{ m.title }}" loading="lazy">
+      {%- else if m.is_video() %}
+      <span class="media-card__icon" title="Video">{% let icon = "video" %}{% include "admin/_icons.html" %}</span>
+      {%- else if m.is_audio() %}
+      <span class="media-card__icon" title="Audio">{% let icon = "speaker" %}{% include "admin/_icons.html" %}</span>
+      {%- else %}
+      <span class="media-card__icon" title="File">{% let icon = "document" %}{% include "admin/_icons.html" %}</span>
+      {%- endif %}
+    </div>
+
+    <div class="media-card__body">
+      <div class="media-card__title">{{ m.title }}</div>
+      <div class="media-card__meta">
+        <code>{{ m.file }}</code>
+        {%- if m.width > 0 %}<span>{{ m.width }}×{{ m.height }}</span>{%- endif %}
+      </div>
+    </div>
+
+    <div class="media-card__order">
+      <label class="ex-card__ord-label">
+        <span>Order</span>
+        <input type="number" name="ord_{{ m.id }}" value="{{ m.ord }}" class="ord-input" min="0" max="9999">
+      </label>
+      <div class="ex-card__nudge">
+        <button type="submit" formaction="/admin/exhibits/{{ exhibit.id }}/media/{{ m.id }}/move-up" class="nudge" title="Move up" aria-label="Move up">▲</button>
+        <button type="submit" formaction="/admin/exhibits/{{ exhibit.id }}/media/{{ m.id }}/move-down" class="nudge" title="Move down" aria-label="Move down">▼</button>
+      </div>
+    </div>
+
+    <div class="media-card__actions">
+      <a href="/admin/exhibits/{{ exhibit.id }}/media/{{ m.id }}/edit" class="btn btn--sm">Edit</a>
+      <a href="/admin/exhibits/{{ exhibit.id }}/media/{{ m.id }}/confirm-delete" class="btn btn--sm danger">Delete</a>
+    </div>
+  </li>
+{%- endfor %}
+</ul>
+
+<div class="exhibits-form__actions">
+  <button type="submit" class="primary">Save order</button>
+  <span class="help">Save commits all order-number changes above.</span>
+</div>
+</form>
+
+{%- endif %}
+{% endblock %}

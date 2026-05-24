@@ -1,0 +1,16 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>{% if tag.id == 0 %}New tag{% else %}Edit: {{ tag.name }}{% endif %}</h1>
+  <a href="/admin/tags">&larr; All tags</a>
+</div>
+<form method="post" action="{% if tag.id == 0 %}/admin/tags/new{% else %}/admin/tags/{{ tag.id }}/edit{% endif %}" class="form-stack">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <label><span>Name</span><input type="text" name="name" value="{{ tag.name }}" required></label>
+  <label><span>Group</span><input type="number" name="grp" value="{{ tag.grp }}" min="0"></label>
+  <div class="form-actions">
+    <button type="submit" class="primary">Save</button>
+    <a href="/admin/tags" class="btn">Cancel</a>
+  </div>
+</form>
+{% endblock %}

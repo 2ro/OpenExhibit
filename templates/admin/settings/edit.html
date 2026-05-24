@@ -1,0 +1,56 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header"><h1>Site settings</h1></div>
+<form method="post" action="/admin/settings" class="form-stack">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <label><span>Site name (shown in &lt;title&gt;)</span><input type="text" name="site_name" value="{{ settings.site_name }}" required></label>
+  <label><span>Display name (shown in header)</span><input type="text" name="obj_name" value="{{ settings.obj_name }}" required></label>
+  <label><span>Site language</span><input type="text" name="site_lang" value="{{ settings.site_lang }}" required></label>
+  <label><span>Theme</span><input type="text" name="obj_theme" value="{{ settings.obj_theme }}"></label>
+  <label><span>Top of sidebar</span><textarea name="obj_itop" rows="4">{{ settings.obj_itop }}</textarea><small>Markdown, BBCode, and inline HTML. Typically your site title — e.g. <code># [My Portfolio](/)</code>.</small></label>
+  <label><span>Bottom of sidebar</span><textarea name="obj_ibot" rows="4">{{ settings.obj_ibot }}</textarea><small>Same markup rules. Good for an imprint or footer link.</small></label>
+  <fieldset class="form-section">
+    <legend>Theme colors</legend>
+    <p class="help">Two clicks, no CSS. The picker drives the public-site <code>--color</code> (text + links) and <code>--bg</code> (page background) custom properties. <code>--color5</code> (visited / muted) is computed from <code>--color</code> at 50% alpha via <code>color-mix()</code>. Leave a field empty to keep the default.</p>
+    <label>
+      <span>Text &amp; link color</span>
+      <input type="color" name="theme_text_color" value="{% if settings.theme_text_color.is_empty() %}#000000{% else %}{{ settings.theme_text_color }}{% endif %}">
+    </label>
+    <label>
+      <span>Background</span>
+      <input type="color" name="theme_bg_color" value="{% if settings.theme_bg_color.is_empty() %}#ffffff{% else %}{{ settings.theme_bg_color }}{% endif %}">
+    </label>
+  </fieldset>
+
+  <label>
+    <span>Site-wide custom CSS</span>
+    <textarea name="custom_css" rows="6" placeholder="/* anything more advanced than colors lives here */">{{ settings.custom_css }}</textarea>
+    <small>Rendered inline on every public page <code>&lt;head&gt;</code>, after the theme-color block above. Use the color picker for simple themes; reach for this textarea for typography, spacing, or section-specific overrides. Per-exhibit overrides live on each exhibit's edit page.</small>
+  </label>
+  <label><span>Date format</span><input type="text" name="site_format" value="{{ settings.site_format }}"></label>
+  <label class="checkbox">
+    <input type="checkbox" name="caching" value="1"{% if settings.caching %} checked{% endif %}>
+    <span>Cache rendered pages</span>
+  </label>
+  <label class="checkbox">
+    <input type="checkbox" name="tagging" value="1"{% if settings.tagging %} checked{% endif %}>
+    <span>Enable tagging</span>
+  </label>
+  <label class="checkbox">
+    <input type="checkbox" name="enable_greentext" value="1"{% if settings.enable_greentext %} checked{% endif %}>
+    <span>Enable greentext <small>(lines starting with <code>&gt;</code> render in green instead of as Markdown blockquotes)</small></span>
+  </label>
+  <fieldset class="form-section">
+    <legend>SMTP (password-reset email)</legend>
+    <p class="help">Leave the host blank to log password-reset mail to the server journal instead of sending it.</p>
+    <label><span>SMTP host</span><input type="text" name="smtp_host" value="{{ settings.smtp_host }}" placeholder="smtp.example.com"></label>
+    <label><span>SMTP port</span><input type="number" name="smtp_port" value="{{ settings.smtp_port }}" min="1" max="65535"></label>
+    <label><span>SMTP username</span><input type="text" name="smtp_user" value="{{ settings.smtp_user }}" autocomplete="off"></label>
+    <label><span>SMTP password</span><input type="password" name="smtp_pass" value="" autocomplete="new-password" placeholder="{% if settings.smtp_pass.is_empty() %}(not set){% else %}(leave blank to keep current){% endif %}"></label>
+    <label><span>From address</span><input type="email" name="smtp_from" value="{{ settings.smtp_from }}" placeholder="noreply@example.com"></label>
+  </fieldset>
+  <div class="form-actions">
+    <button type="submit" class="primary">Save settings</button>
+  </div>
+</form>
+{% endblock %}

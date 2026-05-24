@@ -1,0 +1,26 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>{% if section.id == 0 %}New section{% else %}Edit: {{ section.name }}{% endif %}</h1>
+  <a href="/admin/sections">&larr; All sections</a>
+</div>
+<form method="post" action="{% if section.id == 0 %}/admin/sections/new{% else %}/admin/sections/{{ section.id }}/edit{% endif %}" class="form-stack">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <label><span>Name</span><input type="text" name="name" value="{{ section.name }}" required></label>
+  <label><span>Path</span><input type="text" name="path" value="{{ section.path }}" required></label>
+  <label><span>Description (shown in nav)</span><input type="text" name="description" value="{{ section.description }}"></label>
+  <label><span>Order</span><input type="number" name="ord" value="{{ section.ord }}"></label>
+  <label class="checkbox">
+    <input type="checkbox" name="hidden" value="1"{% if section.hidden %} checked{% endif %}>
+    <span>Hidden</span>
+  </label>
+  <label class="checkbox">
+    <input type="checkbox" name="hide_title" value="1"{% if section.hide_title %} checked{% endif %}>
+    <span>Hide title (silent grouping &mdash; child exhibits still listed, no heading)</span>
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="primary">Save</button>
+    <a href="/admin/sections" class="btn">Cancel</a>
+  </div>
+</form>
+{% endblock %}

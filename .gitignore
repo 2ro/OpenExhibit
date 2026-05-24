@@ -1,0 +1,39 @@
+# Rust build artifacts
+/target
+
+# Local config / secrets
+/.env
+/.env.local
+
+# Local-only working notes / changelog drafts
+/CHANGELOG.md
+
+# Generated CSS (compiled at build time from scss/)
+/static/css/*.css
+
+# User-uploaded media + on-demand derivatives
+/files/dimgs/*
+!/files/dimgs/.gitkeep
+/files/gimgs/*
+!/files/gimgs/.gitkeep
+
+# Local Postgres cluster (dev convenience; never commit data)
+/.pgdata/
+
+# sqlx offline metadata
+.sqlx/
+
+# Logs
+*.log
+/logs/
+
+# Editors
+/.vscode/
+/.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

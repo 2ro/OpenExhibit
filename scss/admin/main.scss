@@ -1,0 +1,1187 @@
+// OpenExhibit admin. Indexhibit-flavored — paper-and-ink calm, generous
+// whitespace, single accent, monochrome chrome. System UI font matches
+// the public site so admin and presentation feel like the same project.
+//
+// Dark mode via `prefers-color-scheme`. No JS toggle: trust the OS.
+
+:root {
+    color-scheme: light dark;
+
+    --bg:        #fafaf9;
+    --surface:   #ffffff;
+    --border:    #e7e5e4;
+    --border-strong: #d6d3d1;
+    --text:      #1c1917;
+    --muted:     #78716c;
+    --accent:    #0004ff;   // matches the Indexhibit reference --color.
+    --accent-fg: #ffffff;
+    --danger:    #b91c1c;
+    --success:   #15803d;
+    --highlight: #fef9c3;   // selection / focus halo.
+    --radius:    4px;
+    --shadow:    0 1px 1px rgba(0, 0, 0, 0.03);
+    --bold:      500;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg:        #131311;
+        --surface:   #1b1b19;
+        --border:    #2b2a27;
+        --border-strong: #3a3835;
+        --text:      #f4f3ef;
+        --muted:     #a1a09b;
+        --accent:    #7c83ff;     // brighter so it reads against dark bg.
+        --accent-fg: #0a0a09;
+        --danger:    #f87171;
+        --success:   #4ade80;
+        --highlight: #4a4a1d;
+        --shadow:    0 1px 1px rgba(0, 0, 0, 0.4);
+    }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
+        "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+        "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+}
+
+code {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    font-size: 0.875em;
+    background: var(--bg);
+    color: var(--muted);
+    padding: 0.05em 0.4em;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+}
+
+::selection { background: var(--highlight); color: var(--text); }
+
+// ─── Header / nav ───────────────────────────────────────────────────────────
+//
+// Classic checkbox-hack burger: the visually-hidden checkbox drives the
+// open/closed state via `:checked ~ siblings`. We tried `<details>` first
+// but Chromium implements the collapse via shadow DOM that author CSS
+// can't override on desktop. The checkbox pattern has no such gotcha
+// and still requires zero JS.
+//
+// DOM order is load-bearing — the checkbox must precede every element
+// it controls (brand, burger label, link nav) for `~` to match.
+
+.admin-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: saturate(180%) blur(8px);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    min-height: 52px;
+}
+
+// Visually hide the checkbox itself but keep it focusable for keyboard
+// users; the <label> is the visible toggle.
+.admin-nav__checkbox {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+.admin-nav__checkbox:focus-visible ~ .admin-nav__burger {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.admin-header .brand {
+    font-weight: 700;
+    color: var(--text);
+    font-size: 1rem;
+    text-decoration: none;
+    flex-shrink: 0;
+    &:hover { text-decoration: none; }
+}
+
+.admin-nav__burger {
+    margin-left: auto;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    width: 38px;
+    height: 38px;
+    padding: 0 9px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 100ms ease, border-color 100ms ease, color 100ms ease;
+    -webkit-tap-highlight-color: transparent;
+
+    span {
+        display: block;
+        height: 2px;
+        background: currentColor;
+        border-radius: 1px;
+        transition: transform 150ms ease, opacity 150ms ease;
+    }
+}
+// Burger ⇒ X when toggled on.
+.admin-nav__checkbox:checked ~ .admin-nav__burger {
+    color: var(--text);
+    border-color: var(--text);
+    span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    span:nth-child(2) { opacity: 0; }
+    span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+}
+
+// Mobile (default): links hidden, revealed when the checkbox is checked.
+// `flex-basis: 100%` forces the nav onto a new flex row below brand/burger.
+.admin-nav__links {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    flex-basis: 100%;
+    padding: 0.25rem 0 0.75rem 0;
+    border-top: 1px solid var(--border);
+    margin: 0 -1.25rem;        // bleed to the header edges
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+.admin-nav__checkbox:checked ~ .admin-nav__links {
+    display: flex;
+}
+.admin-nav__links a {
+    color: var(--text);
+    font-weight: var(--bold);
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    &:hover { color: var(--accent); text-decoration: none; }
+}
+.admin-nav__links .logout-form {
+    margin: 0.75rem 0 0 0;
+    padding: 0;
+}
+.admin-nav__links .logout-form button {
+    background: none;
+    border: 1px solid var(--border-strong);
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.9rem;
+    width: 100%;
+    &:hover { color: var(--text); border-color: var(--text); }
+}
+
+@media (min-width: 720px) {
+    .admin-header { padding: 0 2rem; }
+    .admin-nav__burger,
+    .admin-nav__checkbox { display: none; }
+
+    .admin-nav__links {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        flex: 1;
+        margin: 0;
+        padding: 0;
+        border-top: none;
+        min-height: 52px;
+    }
+    .admin-header .brand { margin-right: 0.5rem; }
+    .admin-nav__links a {
+        font-size: 0.95rem;
+        padding: 0.25rem 0;
+        border-bottom: 1px solid transparent;
+        &:hover { color: var(--text); border-bottom-color: var(--text); }
+    }
+    .admin-nav__links .logout-form { margin: 0 0 0 auto; }
+    .admin-nav__links .logout-form button {
+        width: auto;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+// ─── Layout ─────────────────────────────────────────────────────────────────
+
+.admin-main {
+    max-width: 1080px;
+    margin: 2.5rem auto;
+    padding: 0 2rem;
+}
+
+.page-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.page-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+.page-header > a {
+    color: var(--muted);
+    font-size: 0.9rem;
+    &:hover { color: var(--text); text-decoration: none; }
+}
+
+// ─── Flashes ────────────────────────────────────────────────────────────────
+
+.flash {
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    margin-bottom: 1.5rem;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+}
+.flash.error   { border-left-color: var(--danger); }
+.flash.success { border-left-color: var(--success); }
+
+// ─── Buttons ────────────────────────────────────────────────────────────────
+
+.btn, button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none !important;
+    transition: background 100ms ease, border-color 100ms ease;
+}
+.btn:hover, button:hover { background: var(--bg); border-color: var(--text); }
+
+.btn.primary, button.primary {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+    font-weight: var(--bold);
+    &:hover { filter: brightness(0.95); border-color: var(--accent); }
+}
+.btn.danger, button.danger, a.danger { color: var(--danger) !important; }
+button.danger { border-color: var(--danger); }
+button.danger:hover { background: var(--danger); color: #fff; }
+
+// ─── Tables ─────────────────────────────────────────────────────────────────
+
+.table-wrap {
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+.data {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    background: var(--surface);
+}
+.data th, .data td {
+    padding: 0.65rem 0.95rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+.data th {
+    background: var(--bg);
+    font-weight: var(--bold);
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.data tr:last-child td { border-bottom: none; }
+.data tr:hover td { background: var(--bg); }
+.data .hidden-row td { opacity: 0.55; }
+
+.actions {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+}
+.actions form.inline { margin: 0; }
+.actions button { padding: 0.2rem 0.6rem; font-size: 0.85em; }
+
+.ord-input {
+    width: 64px;
+    padding: 0.2rem 0.4rem;
+    font: inherit;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+}
+.ord-input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    background: var(--surface);
+}
+
+// ─── Forms ──────────────────────────────────────────────────────────────────
+
+.form-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    background: var(--surface);
+    padding: 1.75rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    max-width: 760px;
+    box-shadow: var(--shadow);
+}
+.form-stack label { display: flex; flex-direction: column; gap: 0.3rem; }
+.form-stack label > span:first-child {
+    font-weight: var(--bold);
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.01em;
+}
+.form-stack input[type="text"],
+.form-stack input[type="email"],
+.form-stack input[type="number"],
+.form-stack input[type="password"],
+.form-stack input[type="url"],
+.form-stack input[type="search"],
+.form-stack input[type="file"],
+.form-stack textarea,
+.form-stack select {
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    font: inherit;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 100ms ease, background 100ms ease;
+}
+.form-stack input:focus,
+.form-stack textarea:focus,
+.form-stack select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--surface);
+    // Soft focus ring — visible for keyboard users (WCAG 2.4.7)
+    // but quieter than the browser default. Uses --accent so it
+    // adapts to dark mode + theme overrides automatically.
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.form-stack input[type="color"]:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+// Buttons + links also need a visible focus indicator for keyboard nav.
+.btn:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+.admin-nav__links a:focus-visible,
+.admin-header .brand:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 2px;
+}
+.form-stack input[type="color"] {
+    width: 64px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+}
+.form-stack textarea {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    min-height: 180px;
+    resize: vertical;
+    line-height: 1.5;
+}
+.form-stack small {
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+.form-stack label.checkbox {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.6rem;
+}
+.form-stack label.checkbox span {
+    font-weight: 400;
+    color: var(--text);
+    font-size: inherit;
+    small {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-top: 0.1rem;
+    }
+}
+.form-stack input[type="checkbox"] {
+    margin-top: 4px;
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+}
+.form-actions {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+// Field sets used to group related inputs (External link, theme colors…).
+.form-stack .form-section {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin: 0;
+    legend {
+        padding: 0 0.4rem;
+        color: var(--muted);
+        font-size: 0.85rem;
+        font-weight: var(--bold);
+        letter-spacing: 0.02em;
+    }
+    .help { margin: 0 0 0.75rem 0; color: var(--muted); font-size: 0.85rem; }
+    > label { margin-bottom: 0.75rem; &:last-child { margin-bottom: 0; } }
+}
+
+// ─── Help / hint paragraphs ────────────────────────────────────────────────
+
+.help {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0 0 1rem 0;
+}
+.empty {
+    color: var(--muted);
+    padding: 2rem;
+    text-align: center;
+    background: var(--surface);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+}
+
+// ─── Stats grid (dashboard) ────────────────────────────────────────────────
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.stat {
+    background: var(--surface);
+    padding: 1.25rem 1.4rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none !important;
+    display: block;
+    transition: border-color 80ms ease, background 80ms ease;
+
+    &:hover {
+        border-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 4%, var(--surface));
+    }
+    .num {
+        display: block;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+    }
+    .lbl {
+        display: block;
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 0.25rem;
+    }
+}
+
+// ─── Login page ─────────────────────────────────────────────────────────────
+
+.login-page {
+    background: var(--bg);
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+}
+.login-main {
+    background: var(--surface);
+    padding: 2.25rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+.login-main h1 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.4rem;
+    text-align: center;
+    font-weight: 700;
+}
+.login-form {
+    background: none;
+    padding: 0;
+    border: none;
+    max-width: none;
+    box-shadow: none;
+}
+.login-form button {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+    padding: 0.6rem;
+    justify-content: center;
+    font-weight: var(--bold);
+}
+
+// ─── Upload form ────────────────────────────────────────────────────────────
+//
+// Pure CSS "uploading…" hint via :focus on the submit button. Once
+// clicked the button gets keyboard focus, which persists during the
+// browser's navigation request (the old page stays painted until the
+// response arrives). When focus is held, the three dots animate to
+// signal the request is in-flight. No JS, no faked progress percentage.
+
+.form-stack.upload { max-width: none; }
+
+.upload-submit {
+    position: relative;
+    .label { display: inline-block; }
+    .dots {
+        display: none;
+        margin-left: 0.5rem;
+        i {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            margin: 0 1px;
+            background: currentColor;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: upload-dot 1.2s ease-in-out infinite;
+            &:nth-child(2) { animation-delay: 0.2s; }
+            &:nth-child(3) { animation-delay: 0.4s; }
+        }
+    }
+    &:focus .label::after,
+    &:active .label::after { content: "ing…"; }
+    &:focus .dots,
+    &:active .dots { display: inline-block; }
+}
+
+@keyframes upload-dot {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40%           { opacity: 1;   transform: scale(1.2); }
+}
+
+// ─── Format picker (single-column card list) ───────────────────────────────
+
+.picker-form { max-width: 760px; }
+.picker-intro { color: var(--muted); margin: 0 0 1rem 0; }
+.picker {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+}
+.picker-option {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    align-items: start;
+    gap: 0.85rem;
+    padding: 0.9rem 1.1rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 80ms ease, box-shadow 80ms ease;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: var(--bg); }
+    &:has(input:checked) {
+        background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+        box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    input[type="radio"] {
+        margin: 4px 0 0 0;
+        accent-color: var(--accent);
+        width: 16px;
+        height: 16px;
+    }
+}
+.picker-body { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.picker-title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    strong { font-weight: 700; }
+}
+.picker-key {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+.picker-desc {
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+// ─── Exhibits list — section-grouped cards ────────────────────────────────
+//
+// One <section> per real section, each containing a vertical list of
+// cards. Each card carries a thumbnail, title + badges, format pill +
+// URL, an order input + ▲▼ nudge handles, and a small action row.
+// Drag-to-reorder is JS-only; this is the no-JS substitute.
+
+.page-header h1 { display: flex; align-items: baseline; gap: 0.75rem; }
+.page-header__count {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.exhibits-form { display: flex; flex-direction: column; gap: 2rem; }
+.exhibits-form__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    bottom: 0;
+    padding: 1rem 1.25rem;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.ex-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+.ex-section--hidden { opacity: 0.7; }
+.ex-section--orphan {
+    border-style: dashed;
+    background: color-mix(in srgb, var(--bg) 60%, var(--surface));
+}
+
+.ex-section__head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1.25rem;
+    background: color-mix(in srgb, var(--accent) 4%, var(--surface));
+    border-bottom: 1px solid var(--border);
+}
+.ex-section__title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+    min-width: 0;
+}
+.ex-section__label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    line-height: 1;
+}
+.ex-section__name {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+.ex-section__count {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ex-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.ex-card {
+    display: grid;
+    grid-template-columns: 80px 1fr auto auto;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 80ms ease;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: color-mix(in srgb, var(--accent) 3%, var(--surface)); }
+}
+.ex-card--hidden { opacity: 0.55; }
+.ex-card--top {
+    background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+    box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.ex-card__thumb {
+    width: 80px;
+    height: 60px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+}
+.ex-card__thumb-empty { color: var(--border-strong); font-size: 1.5rem; }
+
+// Inline-SVG icon placeholder when an exhibit has no thumbnail
+// (text-only, external-link, missing-media, etc.). The svg inside
+// is `stroke: currentColor` so it picks up the color rule here.
+.ex-card__icon {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    color: var(--muted);
+    svg { width: 32px; height: 32px; }
+}
+.ex-card__icon--missing { color: color-mix(in srgb, var(--danger) 70%, var(--muted)); }
+
+.media-card__icon {
+    color: var(--muted);
+    svg { width: 56px; height: 56px; stroke-width: 1.25; }
+}
+
+.ex-card__body { min-width: 0; }
+.ex-card__title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.25rem;
+}
+.ex-card__title {
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 1rem;
+    &:hover { text-decoration: underline; }
+}
+.ex-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+.ex-card__url {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.pill {
+    display: inline-block;
+    padding: 0.1rem 0.55rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.01em;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.4;
+}
+.badge--top {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+}
+.badge--published {
+    background: color-mix(in srgb, var(--success) 14%, transparent);
+    color: var(--success);
+}
+.badge--draft {
+    background: color-mix(in srgb, var(--muted) 14%, transparent);
+    color: var(--muted);
+}
+.badge--muted {
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--border);
+}
+
+.ex-card__order {
+    display: flex;
+    align-items: end;
+    gap: 0.5rem;
+}
+.ex-card__ord-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    > span {
+        font-size: 0.7rem;
+        color: var(--muted);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .ord-input {
+        width: 64px;
+        text-align: center;
+    }
+}
+.ex-card__nudge {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.nudge {
+    width: 28px;
+    height: 22px;
+    padding: 0;
+    line-height: 1;
+    font-size: 0.7rem;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--muted);
+    border-radius: 3px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background 80ms ease, color 80ms ease;
+
+    &:hover {
+        background: var(--accent);
+        color: var(--accent-fg);
+        border-color: var(--accent);
+    }
+}
+
+.ex-card__actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+.btn--sm {
+    padding: 0.25rem 0.55rem;
+    font-size: 0.8rem;
+}
+.btn--ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--muted);
+    &:hover { background: var(--bg); color: var(--text); border-color: var(--border); }
+}
+
+@media (max-width: 820px) {
+    .ex-card {
+        grid-template-columns: 60px 1fr;
+        grid-template-rows: auto auto;
+        gap: 0.75rem 1rem;
+    }
+    .ex-card__thumb { width: 60px; height: 60px; }
+    .ex-card__order { grid-column: 1 / -1; }
+    .ex-card__actions { grid-column: 1 / -1; }
+}
+
+// ─── Media grid (admin) ────────────────────────────────────────────────────
+//
+// One card per media item, visual-first (thumb is the dominant element).
+// Reuses the .ord-input + .nudge controls from the exhibits-list block.
+
+.page-header__actions { display: flex; gap: 0.5rem; align-items: center; }
+
+.media-grid {
+    list-style: none;
+    margin: 0 0 1.5rem 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+.media-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: border-color 80ms ease;
+
+    &:hover { border-color: var(--border-strong); }
+}
+.media-card--hidden { opacity: 0.55; }
+
+.media-card__thumb {
+    aspect-ratio: 4 / 3;
+    background: var(--bg);
+    display: grid;
+    place-items: center;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+}
+.media-card__type {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.media-card__body {
+    padding: 0.7rem 0.85rem 0.5rem 0.85rem;
+    min-height: 50px;
+}
+.media-card__title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.media-card__meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 0.75rem;
+    code {
+        background: none;
+        border: none;
+        padding: 0;
+        color: var(--muted);
+        font-size: 0.75rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+}
+
+.media-card__order {
+    display: flex;
+    align-items: end;
+    gap: 0.4rem;
+    padding: 0 0.85rem 0.6rem 0.85rem;
+    border-top: 1px dashed var(--border);
+    padding-top: 0.6rem;
+    margin-top: 0.25rem;
+}
+.media-card__actions {
+    display: flex;
+    gap: 0.3rem;
+    padding: 0.5rem 0.85rem 0.85rem 0.85rem;
+    border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 50%, transparent);
+}
+
+// ─── Pagination ────────────────────────────────────────────────────────────
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    justify-content: center;
+    padding: 1.25rem 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    a { color: var(--text); }
+}
+
+.filters {
+    display: flex;
+    align-items: end;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+    label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        > span { font-size: 0.8rem; color: var(--muted); font-weight: var(--bold); }
+    }
+    input, select {
+        padding: 0.45rem 0.6rem;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        font: inherit;
+        font-size: 0.9rem;
+        background: var(--surface);
+        color: var(--text);
+    }
+    label.checkbox { flex-direction: row; align-items: center; }
+}
+
+// ─── Format-picker mobile tweak ─────────────────────────────────────────────
+
+@media (max-width: 640px) {
+    .admin-main { margin: 1.25rem auto; padding: 0 1rem; }
+    .admin-header { padding: 0 1rem; }
+    .form-stack { padding: 1.25rem; }
+    .page-header { flex-direction: column; align-items: flex-start; }
+}
+
+// ─── Responsive data-tables — stack into cards on mobile ──────────────────
+//
+// On narrow viewports `<table class="data">` becomes a vertical list of
+// row-cards. Each `<td>` shows its column name (from `data-label="…"`)
+// as a small uppercase prefix. Empty / unlabeled cells (thumbnails)
+// render without the prefix and take the full row width.
+
+@media (max-width: 720px) {
+    .table-wrap {
+        overflow-x: visible;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+    }
+    .data {
+        display: block;
+        min-width: 0;
+        background: transparent;
+        box-shadow: none;
+        thead { display: none; }
+        tbody { display: block; }
+        tr {
+            display: block;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 0.75rem;
+            padding: 0.4rem 0.85rem;
+            box-shadow: var(--shadow);
+        }
+        tr:hover td { background: transparent; }
+        tr.hidden-row { opacity: 0.55; }
+        td {
+            display: flex;
+            align-items: baseline;
+            gap: 0.85rem;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            min-width: 0;
+
+            &:last-child { border-bottom: none; }
+            &::before {
+                content: attr(data-label);
+                flex: 0 0 5.5rem;
+                color: var(--muted);
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+        }
+        // Cells explicitly opting out of the label prefix (e.g. thumbnail).
+        td[data-label=""]::before { display: none; }
+        td[data-label=""] {
+            padding: 0.25rem 0 0.5rem 0;
+            img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 3px;
+                border: 1px solid var(--border);
+            }
+        }
+        td.actions {
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            &::before { flex: 1 0 100%; margin-bottom: 0.25rem; }
+            form.inline, > a, > button { margin: 0; }
+        }
+    }
+}

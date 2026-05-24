@@ -1,0 +1,123 @@
+// Lightbox via :target — pure HTML/CSS.
+//
+// Close mechanisms (in order of click-target size):
+//   1. The whole backdrop (.lb-close-zone) — anywhere outside the image closes.
+//   2. The image itself (.lb-img) — clicking the image closes.
+//   3. The × button (.lb-close) — top-right.
+// All three navigate to `href="#_"`, which clears the URL hash and removes
+// the :target match.
+//
+// Prev/next (.lb-prev / .lb-next) are side strips that sit above the close
+// zone, so the close-by-clicking-outside behaviour only triggers in the
+// vertical center band.
+
+.lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    background: rgba(0, 0, 0, 0.92);
+    color: #fff;
+}
+.lightbox:target { display: block; }
+
+// Layer 1: full-viewport invisible click target. Closes on any miss-click.
+.lightbox .lb-close-zone {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    cursor: zoom-out;
+    text-decoration: none;
+    color: transparent;
+}
+
+// Layer 2: image content, centered, also closes when clicked.
+.lightbox .lb-img {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 80px;
+    text-decoration: none;
+    color: #fff;
+    cursor: zoom-out;
+}
+.lightbox .lb-img img {
+    max-width: 100%;
+    max-height: calc(100vh - 120px);
+    width: auto;
+    height: auto;
+    display: block;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+}
+.lightbox .lb-img .lb-caption {
+    display: block;
+    margin-top: 14px;
+    font-size: 13px;
+    font-style: italic;
+    text-align: center;
+    max-width: 80ch;
+}
+
+// Layer 3: side prev/next strips, sit on top of close-zone so clicking the
+// left/right edge navigates rather than closes.
+.lightbox .lb-prev,
+.lightbox .lb-next {
+    position: absolute;
+    top: 80px;
+    bottom: 80px;
+    width: 60px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 56px;
+    line-height: 1;
+    opacity: 0.5;
+    transition: opacity 150ms, background 150ms;
+}
+.lightbox .lb-prev { left: 0; }
+.lightbox .lb-next { right: 0; }
+.lightbox .lb-prev:hover,
+.lightbox .lb-next:hover {
+    opacity: 1;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+// Layer 4: × close button at top-right, always on top.
+.lightbox .lb-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    font-size: 36px;
+    line-height: 1;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    transition: background 150ms;
+}
+.lightbox .lb-close:hover {
+    background: rgba(255, 255, 255, 0.25);
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .lightbox .lb-img { padding: 64px 12px 50px; }
+    .lightbox .lb-prev,
+    .lightbox .lb-next { width: 44px; font-size: 40px; top: 56px; bottom: 56px; }
+    .lightbox .lb-close { width: 40px; height: 40px; font-size: 28px; }
+}

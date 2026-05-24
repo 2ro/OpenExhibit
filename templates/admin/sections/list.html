@@ -1,0 +1,32 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>Sections</h1>
+  <a href="/admin/sections/new" class="btn">+ New section</a>
+</div>
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>Name</th><th>Path</th><th>Description</th><th>Order</th><th>Hidden</th><th>Actions</th></tr></thead>
+  <tbody>
+  {%- for s in sections %}
+    <tr>
+      <td data-label="Name"><a href="/admin/sections/{{ s.id }}/edit">{{ s.name }}</a></td>
+      <td data-label="Path"><code>{{ s.path }}</code></td>
+      <td data-label="Description">{{ s.description }}</td>
+      <td data-label="Order">{{ s.ord }}</td>
+      <td data-label="Hidden">{% if s.hidden %}yes{% else %}no{% endif %}</td>
+      <td class="actions" data-label="Actions">
+        <form method="post" action="/admin/sections/{{ s.id }}/move-up" class="inline">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <button type="submit" aria-label="Move up">▲</button>
+        </form>
+        <form method="post" action="/admin/sections/{{ s.id }}/move-down" class="inline">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <button type="submit" aria-label="Move down">▼</button>
+        </form>
+        <a href="/admin/sections/{{ s.id }}/confirm-delete" class="danger">Delete</a>
+      </td>
+    </tr>
+  {%- endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

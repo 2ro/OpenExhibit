@@ -1,0 +1,21 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>Tags</h1>
+  <a href="/admin/tags/new" class="btn">+ New tag</a>
+</div>
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>Name</th><th>Group</th><th>Actions</th></tr></thead>
+  <tbody>
+  {%- for t in tags %}
+    <tr>
+      <td data-label="Name"><a href="/admin/tags/{{ t.id }}/edit">{{ t.name }}</a></td>
+      <td data-label="Group">{{ t.grp }}</td>
+      <td class="actions" data-label="Actions">
+        <a href="/admin/tags/{{ t.id }}/confirm-delete" class="danger">Delete</a>
+      </td>
+    </tr>
+  {%- endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

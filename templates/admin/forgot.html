@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Forgot password : OpenExhibit Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="/static/css/admin.css" type="text/css">
+</head>
+<body class="login-page">
+<main class="login-main">
+  <h1>Reset password</h1>
+  {%- if let Some(m) = message %}
+  <div class="flash">{{ m }}</div>
+  {%- endif %}
+  <form method="post" action="/admin/forgot" class="login-form">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <label>
+      <span>Email</span>
+      <input type="email" name="email" required autofocus>
+    </label>
+    <button type="submit">Send reset link</button>
+  </form>
+  <p><a href="/admin/login">&larr; Back to login</a></p>
+</main>
+</body>
+</html>

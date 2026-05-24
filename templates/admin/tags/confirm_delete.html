@@ -1,0 +1,12 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<h1>Delete tag?</h1>
+<p>Delete <strong>{{ tag.name }}</strong>? All assignments will be removed.</p>
+<form method="post" action="/admin/tags/{{ tag.id }}/delete" class="form-stack">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div class="form-actions">
+    <button type="submit" class="danger">Yes, delete</button>
+    <a href="/admin/tags" class="btn">Cancel</a>
+  </div>
+</form>
+{% endblock %}

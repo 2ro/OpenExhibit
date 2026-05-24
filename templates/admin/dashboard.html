@@ -1,0 +1,26 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <a href="/admin/exhibits/new" class="btn primary">+ New exhibit</a>
+</div>
+
+<div class="stats-grid">
+  <a class="stat" href="/admin/exhibits">
+    <span class="num">{{ exhibits_count }}</span>
+    <span class="lbl">Exhibits</span>
+  </a>
+  <a class="stat" href="/admin/sections">
+    <span class="num">{{ sections_count }}</span>
+    <span class="lbl">Sections</span>
+  </a>
+  <a class="stat" href="/admin/media">
+    <span class="num">{{ media_count }}</span>
+    <span class="lbl">Media files</span>
+  </a>
+  <a class="stat" href="/admin/tags">
+    <span class="num">{{ tags_count }}</span>
+    <span class="lbl">Tags</span>
+  </a>
+</div>
+{% endblock %}

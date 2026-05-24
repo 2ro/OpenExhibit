@@ -1,0 +1,55 @@
+// Layout base — ported from ndxzsite/default/base.css with SCSS variables.
+@use "variables" as *;
+
+strong, b { font-weight: bold; }
+em, i { font-style: italic; }
+object { display: block; }
+.once, .clL { clear: left; }
+
+#img-container span.backgrounded a,
+#img-container a.thickbox,
+#img-container a.thumb-img,
+#img-container #d-col1 a { background: transparent; }
+
+#index {
+    overflow: auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    position: fixed;
+    height: 100%;
+    z-index: 1;
+}
+#exhibit { height: 100%; top: 0; }
+
+// Pin .bot ("Built with...") to the bottom of the sidebar. Flex column with
+// min-height: 100% makes the container at least as tall as the viewport; the
+// `margin-top: auto` shoves .bot to the bottom whenever there's slack.
+// When the nav is taller than the viewport, the container grows past 100%
+// and #index scrolls — .bot still ends up after the nav, never above it.
+#index .container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    box-sizing: border-box;
+}
+#index .bot {
+    margin-top: auto;
+    padding-top: 1.5em;
+}
+
+#index ul.section span.section_title,
+#index ul.section span.section_title a { cursor: pointer; font-weight: var(--bold); }
+
+#index ul.section span.subsection_title,
+#index ul.section span.subsection_title a { cursor: pointer; }
+
+// All nav links fade to --color5 on hover (indexhibit.org uses
+// `opacity: 0.5` to the same effect). No text-indent — the live site
+// drops the `text-indent: 2px` shift from the bundled default base.css.
+#index a:hover { text-decoration: none; color: var(--color5); }
+
+#index .top {  }
+#index .bot {  }
+
+#img-container .captioning .caption { text-align: left; }

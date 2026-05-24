@@ -1,0 +1,27 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>Users</h1>
+  <a href="/admin/users/new" class="btn">+ New user</a>
+</div>
+<div class="table-wrap"><table class="data">
+  <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Admin?</th><th>Active?</th><th>Actions</th></tr></thead>
+  <tbody>
+  {%- for u in users %}
+    <tr>
+      <td data-label="User ID"><a href="/admin/users/{{ u.id }}/edit">{{ u.userid }}</a></td>
+      <td data-label="Name">{{ u.first_name }} {{ u.last_name }}</td>
+      <td data-label="Email">{{ u.email }}</td>
+      <td data-label="Admin">{% if u.is_admin %}yes{% else %}no{% endif %}</td>
+      <td data-label="Active">{% if u.is_active %}yes{% else %}no{% endif %}</td>
+      <td class="actions" data-label="Actions">
+        <a href="/admin/users/{{ u.id }}/password">Change password</a>
+        {%- if u.id != current_user_id %}
+        <a href="/admin/users/{{ u.id }}/confirm-delete" class="danger">Delete</a>
+        {%- endif %}
+      </td>
+    </tr>
+  {%- endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

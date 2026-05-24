@@ -1,0 +1,139 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>{% if exhibit.id == 0 %}New exhibit{% else %}Edit: {{ exhibit.title }}{% endif %}</h1>
+  <a href="/admin/exhibits">&larr; All exhibits</a>
+</div>
+
+<p class="help">Format: <strong>{{ format_display }}</strong>. Switching format below changes which fields apply — save to refresh the form.</p>
+
+<form method="post" action="/admin/exhibits/{{ exhibit.id }}/edit" class="form-stack">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+  <label>
+    <span>Format</span>
+    <select name="format">
+      {%- for f in formats %}
+      <option value="{{ f.key }}"{% if f.selected %} selected{% endif %}>{{ f.display_name }} &mdash; {{ f.description }}</option>
+      {%- endfor %}
+    </select>
+  </label>
+
+  <label>
+    <span>Title</span>
+    <input type="text" name="title" value="{{ exhibit.title }}" required>
+  </label>
+
+  {%- if caps.requires_url_slug %}
+  <label>
+    <span>URL</span>
+    <input type="text" name="url" value="{{ exhibit.url }}" required
+           placeholder="/project/my-exhibit/" pattern="/.*/">
+  </label>
+  {%- else %}
+  <input type="hidden" name="url" value="{{ exhibit.url }}">
+  {%- endif %}
+
+  <label>
+    <span>Section</span>
+    <select name="section_id" required>
+      {%- for s in sections %}
+      <option value="{{ s.id }}"{% if s.is_current %} selected{% endif %}>{{ s.description }}</option>
+      {%- endfor %}
+    </select>
+  </label>
+
+  {%- if caps.uses_thumbs_size %}
+  <label>
+    <span>Thumbnail size (px)</span>
+    <input type="number" name="thumbs" value="{{ exhibit.thumbs }}" min="50" max="2000">
+  </label>
+  {%- else %}
+  <input type="hidden" name="thumbs" value="{{ exhibit.thumbs }}">
+  {%- endif %}
+
+  <label>
+    <span>Status</span>
+    <select name="status">
+      <option value="0"{% if exhibit.status == 0 %} selected{% endif %}>Draft</option>
+      <option value="1"{% if exhibit.status == 1 %} selected{% endif %}>Published</option>
+    </select>
+  </label>
+
+  {%- if caps.uses_content %}
+  <label>
+    <span>Content</span>
+    <textarea name="content" rows="12">{{ exhibit.content }}</textarea>
+    <small>Markdown, BBCode (<code>[b]</code>, <code>[i]</code>, <code>[url=]</code>, <code>[img]</code>, <code>[quote]</code>, <code>[code]</code>, <code>[list]</code>), and inline HTML all work. Scripts and event handlers are stripped on render.</small>
+  </label>
+  {%- else %}
+  <input type="hidden" name="content" value="{{ exhibit.content }}">
+  {%- endif %}
+
+  <label>
+    <span>Tags (comma-separated)</span>
+    <input type="text" name="tag_names" value="{{ tag_names }}">
+    <small>Listed at <code>/tag/&lt;name&gt;</code>.</small>
+  </label>
+
+  <label class="checkbox">
+    <input type="checkbox" name="is_home" value="1"{% if exhibit.is_home %} checked{% endif %}>
+    <span>Site home page</span>
+  </label>
+
+  <label class="checkbox">
+    <input type="checkbox" name="section_top" value="1"{% if exhibit.section_top %} checked{% endif %}>
+    <span>Use as section title link <small>(this exhibit replaces the section name in the nav — uncheck to show it as a child item instead)</small></span>
+  </label>
+
+  <label class="checkbox">
+    <input type="checkbox" name="is_new" value="1"{% if exhibit.is_new %} checked{% endif %}>
+    <span>Mark as new <small>(adds a "New" badge next to the nav link)</small></span>
+  </label>
+
+  <label class="checkbox">
+    <input type="checkbox" name="hidden" value="1"{% if exhibit.hidden %} checked{% endif %}>
+    <span>Hide from navigation</span>
+  </label>
+
+  {%- if caps.uses_password %}
+  <label>
+    <span>Password protection (leave blank for none)</span>
+    <input type="password" name="password" autocomplete="new-password">
+  </label>
+  {%- endif %}
+
+  <label>
+    <span>Custom CSS (optional)</span>
+    <textarea name="custom_css" rows="5" placeholder=":root { --color: rgba(0,4,255,1); --color5: rgba(0,4,255,0.5); }">{{ exhibit.custom_css }}</textarea>
+    <small>Rendered inline in the page <code>&lt;head&gt;</code> as raw CSS — runs in every visitor's browser. Override <code>--color</code> / <code>--color5</code> / <code>--bg</code> for theming, or write any CSS to restyle this exhibit. Site-wide CSS lives in <a href="/admin/settings">Settings</a>.</small>
+  </label>
+
+  {%- if caps.uses_external_link %}
+  <fieldset class="form-section">
+    <legend>External link</legend>
+    <p class="help">This exhibit type forwards visitors to an external URL. Nav links point at this URL and visiting the slug directly issues a 302 redirect.</p>
+    <label>
+      <span>External URL</span>
+      <input type="url" name="link" value="{{ exhibit.link }}" placeholder="https://example.com/page">
+      <small>Only <code>http://</code>, <code>https://</code>, <code>mailto:</code>, <code>tel:</code>, and absolute paths starting with <code>/</code> are allowed.</small>
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="link_target" value="1"{% if exhibit.link_target %} checked{% endif %}>
+      <span>Open in a new tab</span>
+    </label>
+  </fieldset>
+  {%- else %}
+  <input type="hidden" name="link" value="{{ exhibit.link }}">
+  {%- if exhibit.link_target %}<input type="hidden" name="link_target" value="1">{% endif %}
+  {%- endif %}
+
+  <div class="form-actions">
+    <button type="submit" class="primary">Save changes</button>
+    {%- if caps.uses_media && exhibit.id > 0 %}
+    <button type="submit" name="next" value="media">Save &amp; add media &rarr;</button>
+    {%- endif %}
+    <a href="/admin/exhibits" class="btn">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ page_title }} : OpenExhibit Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="/static/css/admin.css" type="text/css">
+</head>
+<body>
+<header class="admin-header">
+  <input type="checkbox" id="adminnav-toggle" class="admin-nav__checkbox" aria-label="Toggle menu">
+  <a href="/admin" class="brand">OpenExhibit</a>
+  <label for="adminnav-toggle" class="admin-nav__burger" aria-hidden="true">
+    <span></span><span></span><span></span>
+  </label>
+  <nav class="admin-nav__links">
+    <a href="/admin/exhibits">Exhibits</a>
+    <a href="/admin/sections">Sections</a>
+    <a href="/admin/tags">Tags</a>
+    <a href="/admin/media">Media</a>
+    <a href="/admin/users">Users</a>
+    <a href="/admin/settings">Settings</a>
+    <a href="/" target="_blank" rel="noopener">View site &rarr;</a>
+    <form method="post" action="/admin/logout" class="logout-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button type="submit">Log out ({{ user_id }})</button>
+    </form>
+  </nav>
+</header>
+<main class="admin-main">
+  {%- if let Some(msg) = flash %}
+  <div class="flash">{{ msg }}</div>
+  {%- endif %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

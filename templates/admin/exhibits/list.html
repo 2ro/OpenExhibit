@@ -1,0 +1,141 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>Exhibits <span class="page-header__count">{{ total }}</span></h1>
+  <a href="/admin/exhibits/new" class="btn primary">+ New exhibit</a>
+</div>
+
+{%- if total == 0 %}
+<div class="empty">
+  No exhibits yet. <a href="/admin/exhibits/new">Create your first one</a> &rarr;
+</div>
+{%- else %}
+
+<p class="help">Exhibits are grouped by section. Reorder by editing the order number and clicking <em>Save order</em>, or nudge a single row with the ▲ ▼ buttons. The card with the small flag is the section's "title link" exhibit.</p>
+
+<form method="post" action="/admin/exhibits/reorder" class="exhibits-form">
+<input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+{%- for g in groups %}
+<section class="ex-section{% if g.hidden %} ex-section--hidden{% endif %}">
+  <header class="ex-section__head">
+    <div class="ex-section__title-block">
+      <span class="ex-section__label">Section</span>
+      <h2 class="ex-section__name">
+        {{ g.name }}
+        {%- if g.hidden %}<span class="badge badge--muted">hidden</span>{%- endif %}
+      </h2>
+    </div>
+    <span class="ex-section__count">{{ g.exhibits.len() }} exhibit{% if g.exhibits.len() != 1 %}s{% endif %}</span>
+    <a class="btn btn--ghost" href="/admin/sections/{{ g.id }}/edit">Edit section</a>
+  </header>
+
+  <ul class="ex-list">
+  {%- for ex in g.exhibits %}
+    <li class="ex-card{% if ex.hidden %} ex-card--hidden{% endif %}{% if ex.section_top %} ex-card--top{% endif %}">
+      <div class="ex-card__thumb">
+        {%- if let Some(t) = ex.thumb_url %}
+        <img src="{{ t }}" alt="" loading="lazy">
+        {%- else if ex.format_key == "external_link" %}
+        <span class="ex-card__icon" title="External link">{% let icon = "external-link" %}{% include "admin/_icons.html" %}</span>
+        {%- else if ex.format_key == "no_show" %}
+        <span class="ex-card__icon" title="Text-only exhibit">{% let icon = "document-text" %}{% include "admin/_icons.html" %}</span>
+        {%- else if ex.format_key == "tag_display" %}
+        <span class="ex-card__icon" title="Tag display">{% let icon = "tag" %}{% include "admin/_icons.html" %}</span>
+        {%- else if ex.format_uses_media %}
+        <span class="ex-card__icon ex-card__icon--missing" title="No media uploaded yet">{% let icon = "photo-off" %}{% include "admin/_icons.html" %}</span>
+        {%- else %}
+        <span class="ex-card__icon" title="No media">{% let icon = "document" %}{% include "admin/_icons.html" %}</span>
+        {%- endif %}
+      </div>
+
+      <div class="ex-card__body">
+        <div class="ex-card__title-row">
+          <a class="ex-card__title" href="/admin/exhibits/{{ ex.id }}/edit">{{ ex.title }}</a>
+          {%- if ex.section_top %}
+          <span class="badge badge--top" title="Section title link">★ section title</span>
+          {%- endif %}
+          {%- if ex.hidden %}
+          <span class="badge badge--muted">hidden</span>
+          {%- endif %}
+          {%- if ex.status == 1 %}
+          <span class="badge badge--published">published</span>
+          {%- else %}
+          <span class="badge badge--draft">draft</span>
+          {%- endif %}
+        </div>
+        <div class="ex-card__meta">
+          <span class="pill">{{ ex.format_display }}</span>
+          <code class="ex-card__url">{{ ex.url }}</code>
+        </div>
+      </div>
+
+      <div class="ex-card__order">
+        <label class="ex-card__ord-label">
+          <span>Order</span>
+          <input type="number" name="ord_{{ ex.id }}" value="{{ ex.ord }}" class="ord-input" min="0" max="9999">
+        </label>
+        <div class="ex-card__nudge">
+          <button type="submit" formaction="/admin/exhibits/{{ ex.id }}/move-up" class="nudge" title="Move up" aria-label="Move up">▲</button>
+          <button type="submit" formaction="/admin/exhibits/{{ ex.id }}/move-down" class="nudge" title="Move down" aria-label="Move down">▼</button>
+        </div>
+      </div>
+
+      <div class="ex-card__actions">
+        <a href="/admin/exhibits/{{ ex.id }}/edit" class="btn btn--sm">Edit</a>
+        <a href="/admin/exhibits/{{ ex.id }}/media" class="btn btn--sm">Media</a>
+        <a href="/admin/exhibits/{{ ex.id }}/confirm-delete" class="btn btn--sm danger">Delete</a>
+      </div>
+    </li>
+  {%- endfor %}
+  </ul>
+</section>
+{%- endfor %}
+
+{%- if !orphans.is_empty() %}
+<section class="ex-section ex-section--orphan">
+  <header class="ex-section__head">
+    <div class="ex-section__title-block">
+      <span class="ex-section__label">Orphaned</span>
+      <h2 class="ex-section__name">No matching section</h2>
+    </div>
+    <span class="ex-section__count">{{ orphans.len() }}</span>
+  </header>
+  <ul class="ex-list">
+  {%- for ex in orphans %}
+    <li class="ex-card">
+      <div class="ex-card__thumb">
+        {%- if let Some(t) = ex.thumb_url %}
+        <img src="{{ t }}" alt="" loading="lazy">
+        {%- else %}
+        <span class="ex-card__icon" title="Orphaned (no section)">{% let icon = "photo-off" %}{% include "admin/_icons.html" %}</span>
+        {%- endif %}
+      </div>
+      <div class="ex-card__body">
+        <div class="ex-card__title-row">
+          <a class="ex-card__title" href="/admin/exhibits/{{ ex.id }}/edit">{{ ex.title }}</a>
+          <span class="badge badge--muted">orphan</span>
+        </div>
+        <div class="ex-card__meta">
+          <span class="pill">{{ ex.format_display }}</span>
+          <code class="ex-card__url">{{ ex.url }}</code>
+        </div>
+      </div>
+      <div class="ex-card__actions">
+        <a href="/admin/exhibits/{{ ex.id }}/edit" class="btn btn--sm">Edit</a>
+        <a href="/admin/exhibits/{{ ex.id }}/confirm-delete" class="btn btn--sm danger">Delete</a>
+      </div>
+    </li>
+  {%- endfor %}
+  </ul>
+</section>
+{%- endif %}
+
+<div class="exhibits-form__actions">
+  <button type="submit" class="primary">Save order</button>
+  <span class="help">Save commits all order-number changes above.</span>
+</div>
+</form>
+
+{%- endif %}
+{% endblock %}

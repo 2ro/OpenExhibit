@@ -1,0 +1,20 @@
+// Public-site design tokens. Sourced from ndxzsite/default/{base,style}.css.
+//
+// Colors are SCSS *fallbacks* — runtime values come from the CSS custom
+// properties declared in `:root` of _typography.scss, which the admin can
+// override via the per-exhibit or site-wide custom-CSS field.
+$sidebar-width: 285px;
+$sidebar-padding: 36px;
+$body-font: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+$body-size: 16px;
+$body-line: 1.4em;
+
+$color-text: #000;
+$color-link: #00f;
+$color-visited: #888;
+$color-bg: #fff;
+
+$max-paragraph-width: 800px;
+$mobile-breakpoint: 768px;

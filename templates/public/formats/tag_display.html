@@ -1,0 +1,25 @@
+{% extends "public/layout.html" %}
+
+{% block exhibit_body %}
+<div id="img-container" class="tag_display">
+  {%- if !content.is_empty() %}
+  <div class="text">{{ content|safe }}</div>
+  {%- endif %}
+  <ul class="thumbs">
+  {%- for m in media %}
+    <li>
+      {%- if m.is_video %}
+      <video controls preload="metadata" src="{{ m.file_url }}"></video>
+      {%- else if m.is_audio %}
+      <audio controls preload="metadata" src="{{ m.file_url }}"></audio>
+      {%- else %}
+      <a href="{{ m.exhibit_url }}">
+        <img src="{{ m.thumb_url }}" alt="{{ m.title }}" width="{{ m.thumb_w }}" height="{{ m.thumb_h }}">
+      </a>
+      {%- endif %}
+      {%- if !m.title.is_empty() %}<div class="captioning"><span class="title">{{ m.title }}</span></div>{% endif %}
+    </li>
+  {%- endfor %}
+  </ul>
+</div>
+{% endblock %}

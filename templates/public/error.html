@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ code }} — {{ title }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/static/css/public.css" type="text/css">
+<style>
+/* Inherits --color / --color5 / --bg from public.css so the error
+   page matches whatever theme the operator has set. */
+.err-page {
+  max-width: 520px;
+  margin: 14vh auto;
+  padding: 0 1.25rem;
+}
+.err-code {
+  color: var(--color5);
+  font-size: 64px;
+  line-height: 1;
+  margin: 0 0 0.25em 0;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.err-title {
+  font-size: 1.2em;
+  margin: 0 0 1em 0;
+  font-weight: 700;
+}
+.err-message {
+  color: var(--color5);
+  line-height: 1.5;
+  margin: 0 0 2em 0;
+}
+.err-back {
+  color: var(--color);
+  text-decoration: none;
+  font-size: 0.9em;
+}
+.err-back:hover { text-decoration: underline; }
+</style>
+</head>
+<body class="error-page">
+<main class="err-page">
+  <p class="err-code">{{ code }}</p>
+  <h1 class="err-title">{{ title }}</h1>
+  <p class="err-message">{{ message }}</p>
+  <a class="err-back" href="/">&larr; Back to home</a>
+</main>
+</body>
+</html>

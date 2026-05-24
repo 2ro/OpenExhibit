@@ -1,0 +1,15 @@
+{% extends "public/layout.html" %}
+{% block extra_head %}
+{%- if !link.is_empty() %}
+<meta http-equiv="refresh" content="0; url={{ link }}">
+{%- endif %}
+{% endblock %}
+{% block exhibit_body %}
+<div class="external-link-fallback">
+  {%- if !link.is_empty() %}
+  <p>Redirecting to <a href="{{ link }}">{{ link }}</a>&hellip;</p>
+  {%- else %}
+  <p>This entry is configured as an external link but has no URL set yet.</p>
+  {%- endif %}
+</div>
+{% endblock %}

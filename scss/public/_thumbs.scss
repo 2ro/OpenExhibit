@@ -1,0 +1,109 @@
+// Thumbnail grids for the formats that don't otherwise lay out their media:
+// visual_index, thickbox, documenta, tag_display.
+
+// visual_index: responsive grid of square-ish thumbs. `--thumb-size`
+// comes inline from the template (driven by exhibits.thumbs) so the
+// admin's thumbnail-size input actually controls the grid track size.
+.visual_index .thumbs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--thumb-size, 180px), 1fr));
+    gap: 12px;
+}
+.visual_index .thumbs .thumb {
+    margin: 0;
+    line-height: 0;
+}
+.visual_index .thumbs .thumb-img {
+    display: block;
+    overflow: hidden;
+}
+.visual_index .thumbs .thumb-img img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 200ms ease;
+}
+.visual_index .thumbs .thumb-img:hover img {
+    transform: scale(1.02);
+}
+.visual_index .thumbs .captioning {
+    margin-top: 4px;
+    line-height: 1.3em;
+}
+
+// thickbox: similar grid, no hover transform (lightbox does the work).
+.thickbox .thumbs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+}
+.thickbox .thumbs li { margin: 0; line-height: 0; }
+.thickbox .thumbs .thickbox img { width: 100%; height: auto; display: block; }
+
+// documenta: looser grid, larger cells, captions visible under each.
+.documenta .documenta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+.documenta .documenta-grid .cell { line-height: 0; }
+.documenta .documenta-grid .cell img { width: 100%; height: auto; display: block; }
+.documenta .documenta-grid .cell .captioning {
+    margin-top: 6px;
+    line-height: 1.3em;
+    font-size: 0.85em;
+}
+
+// tag_display: tag-archive listings.
+.tag_display .thumbs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+.tag_display .thumbs li { margin: 0; line-height: 0; }
+.tag_display .thumbs img { width: 100%; height: auto; display: block; }
+
+// over_and_over: stacked images, full-width-of-content.
+.over_and_over .picture {
+    margin-bottom: 1em;
+    line-height: 0;
+}
+.over_and_over .picture img,
+.over_and_over .picture video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+// no_thumbs: same stacked treatment.
+.no_thumbs .picture {
+    margin-bottom: 1.5em;
+    line-height: 0;
+}
+.no_thumbs .picture img,
+.no_thumbs .picture video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+.no_thumbs .picture .captioning {
+    margin-top: 6px;
+    line-height: 1.3em;
+}
+
+// random_image: just one picture, full-width-of-content.
+.random_image .picture img,
+.random_image .picture video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}

@@ -1,0 +1,13 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<h1>Delete section?</h1>
+<p>Delete <strong>{{ section.name }}</strong> (<code>{{ section.path }}</code>)?</p>
+<p>Exhibits in this section will be unlinked. This cannot be undone.</p>
+<form method="post" action="/admin/sections/{{ section.id }}/delete" class="form-stack">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div class="form-actions">
+    <button type="submit" class="danger">Yes, delete</button>
+    <a href="/admin/sections" class="btn">Cancel</a>
+  </div>
+</form>
+{% endblock %}

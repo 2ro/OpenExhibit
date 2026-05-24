@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="{{ base.site_lang }}">
+<head>
+<meta charset="utf-8">
+<title>{{ base.page_title }} : {{ base.obj_name }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{%- if let Some(d) = base.description %}
+<meta name="description" content="{{ d }}">
+{%- endif %}
+<link rel="stylesheet" href="/static/css/public.css" type="text/css">
+{%- if !base.theme_text_color.is_empty() || !base.theme_bg_color.is_empty() %}
+<style>:root {
+{%- if !base.theme_text_color.is_empty() %}
+  --color: {{ base.theme_text_color }};
+  --color5: color-mix(in srgb, {{ base.theme_text_color }} 50%, transparent);
+{%- endif %}
+{%- if !base.theme_bg_color.is_empty() %}
+  --bg: {{ base.theme_bg_color }};
+{%- endif %}
+}</style>
+{%- endif %}
+{%- if !base.site_custom_css.is_empty() %}
+<style>{{ base.site_custom_css|safe }}</style>
+{%- endif %}
+{%- if !base.exhibit_custom_css.is_empty() %}
+<style>{{ base.exhibit_custom_css|safe }}</style>
+{%- endif %}
+{%- block extra_head %}{% endblock %}
+</head>
+<body class="{{ base.body_kind }} section-{{ base.section_id }} exhibit-{{ base.exhibit_id }} format-{{ base.format }}">
+<input type="checkbox" id="nav-toggle-input" hidden>
+<label for="nav-toggle-input" class="index-toggle">Menu</label>
+<div id="index">
+<div class="container">
+
+<div class="top">{{ base.obj_itop|safe }}</div>
+{% include "public/nav.html" %}
+<div class="bot">{{ base.obj_ibot|safe }}</div>
+
+</div>
+</div>
+
+<div id="exhibit">
+<div class="container">
+
+<div class="top"><h2>{{ base.page_title }}</h2></div>
+<!-- text and image -->
+{% block exhibit_body %}{% endblock %}
+<!-- end text and image -->
+
+</div>
+</div>
+</body>
+</html>

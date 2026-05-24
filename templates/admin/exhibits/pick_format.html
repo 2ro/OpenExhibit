@@ -1,0 +1,33 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-header">
+  <h1>New exhibit</h1>
+  <a href="/admin/exhibits">&larr; All exhibits</a>
+</div>
+
+<form method="post" action="/admin/exhibits/new" class="picker-form">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+  <p class="picker-intro">Pick a type. Each one defines its own page layout, the fields the admin form shows, and how its nav link behaves.</p>
+
+  <div class="picker">
+    {%- for f in formats %}
+    <label class="picker-option">
+      <input type="radio" name="format" value="{{ f.key }}"{% if f.key == "visual_index" %} checked{% endif %} required>
+      <span class="picker-body">
+        <span class="picker-title">
+          <strong>{{ f.display_name }}</strong>
+          <code class="picker-key">{{ f.key }}</code>
+        </span>
+        <span class="picker-desc">{{ f.description }}</span>
+      </span>
+    </label>
+    {%- endfor %}
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="primary">Create &rarr;</button>
+    <a href="/admin/exhibits" class="btn">Cancel</a>
+  </div>
+</form>
+{% endblock %}

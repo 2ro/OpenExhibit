@@ -1,0 +1,28 @@
+// Native <audio>/<video> styling. Replaces SWF Flash players.
+audio, video {
+    display: block;
+    margin: 0.5em 0 1em 0;
+    max-width: 100%;
+}
+
+video {
+    width: 100%;
+    height: auto;
+    background: #000;
+}
+
+audio {
+    width: 100%;
+    max-width: 600px;
+}
+
+// Videos inside thumbnail grids should size like a thumbnail, not a hero.
+.visual_index .thumbs .thumb video,
+.documenta .documenta-grid .cell video,
+.thickbox .thumbs li video,
+.tag_display .thumbs li video {
+    max-width: 200px;
+    width: 100%;
+    height: auto;
+    margin: 0;
+}

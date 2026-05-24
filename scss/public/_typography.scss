@@ -1,0 +1,202 @@
+// Typography & link scheme — ported from ndxzsite/default/style.css.
+//
+// All color usage routes through three CSS variables — `--color`, `--color5`
+// (50%-alpha companion), and `--bg`. Defaults match Indexhibit's neutral
+// black-on-white. The admin can override these per-exhibit or site-wide
+// via the Custom CSS field, e.g.:
+//
+//     :root { --color: rgba(0, 4, 255, 1); --color5: rgba(0, 4, 255, 0.5); }
+//
+@use "variables" as *;
+
+:root {
+    --color: #{$color-text};
+    --color5: rgba(0, 0, 0, 0.5);
+    --bg: #{$color-bg};
+    --bold: 500;
+}
+
+body {
+    font-size: $body-size;
+    font-family: $body-font;
+    background: var(--bg);
+    color: var(--color);
+    line-height: $body-line;
+}
+
+a:link    { text-decoration: none; color: var(--color); }
+a:visited { text-decoration: none; color: var(--color5); }
+a:hover   { text-decoration: underline; }
+a:active  { text-decoration: none; color: #0c0; }
+a img     { border: none; }
+audio:focus { outline: none; }
+
+small      { font-size: 9px; }
+blockquote {
+    margin: 0 0 1em 0;
+    padding: 0.1em 0 0.1em 1em;
+    border-left: 3px solid var(--color5);
+    color: var(--color5);
+    p:last-child { margin-bottom: 0; }
+}
+
+// 4chan-style greentext, emitted by the markup pipeline when the admin
+// flips "Enable greentext" in settings. One `<p class="greentext">` per
+// `>` line so paragraph breaks still work.
+.greentext { color: #789922; }
+
+// Inline `code` and fenced ```code blocks``` in admin-authored content.
+// Background derived from --color so the same rule works in any theme.
+code, pre {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+}
+#exhibit code {
+    background: color-mix(in srgb, var(--color) 7%, transparent);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+}
+#exhibit pre {
+    background: color-mix(in srgb, var(--color) 5%, transparent);
+    padding: 0.9em 1em;
+    border-radius: 3px;
+    border: 1px solid color-mix(in srgb, var(--color) 12%, transparent);
+    overflow-x: auto;
+    margin: 0 0 1em 0;
+    line-height: 1.5;
+    max-width: $max-paragraph-width;
+}
+#exhibit pre code {
+    background: none;
+    padding: 0;
+    border: 0;
+    font-size: inherit;
+}
+
+// Indexhibit-style: chrome headings (sidebar title, page title) stay
+// at body size for that calm, label-like look. Admin-authored content
+// gets a proper scale further down.
+h1, h2 { font-size: $body-size; margin-bottom: 1em; font-weight: var(--bold); }
+h3, h4 { font-size: $body-size; margin-bottom: 1em; }
+
+#index p { margin-bottom: 1em; }
+#exhibit p, code, blockquote {
+    max-width: $max-paragraph-width;
+    margin-bottom: 1em;
+}
+
+.highlight { background: #f3ffc1; color: var(--color); }
+
+#index   { width: $sidebar-width; background: var(--bg); }
+#exhibit { margin: 0 0 0 $sidebar-width; }
+
+#index ul { list-style: none; margin: 0; padding: 0; }
+#index ul.section { margin-bottom: 1em; }
+
+#index ul#all_tags { list-style: none; margin-bottom: 1em; }
+#index ul#all_tags li { display: inline; margin-right: 3px; }
+
+#index ul.section span.section_title,
+#index ul.section span.section_title a { color: var(--color); font-weight: var(--bold); }
+
+// Active section gets the full bold to stand out from the semi-bold siblings.
+#index span.active_section_title,
+#index span.active_section_title a { font-weight: bold; }
+
+li.active a:link,
+li a.active,
+li.active a:hover,
+li.active a:active,
+li.active a:visited,
+li span.active,
+#index ul.section li.active a:link,
+#index ul.section li.active a:hover,
+#index ul.section li.active a:active,
+#index ul.section li.active a:visited {
+    font-weight: normal;
+    color: var(--color);
+}
+
+#index ul li sup.new_exhibit {
+    color: #0c0;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 8px;
+    vertical-align: top;
+
+    &:before {
+        color: #0c0;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 8px;
+        vertical-align: top;
+        content: "New";
+    }
+}
+
+#exhibit a:link  { text-decoration: underline; }
+#exhibit a:hover { text-decoration: none; }
+
+// ── Content-area typography (admin-authored markdown / HTML) ──────────
+//
+// The chrome (sidebar nav, page title) keeps its body-size-bold look;
+// content gets an actual heading hierarchy so structured writing reads
+// like structured writing. Scale is gentle on purpose — Indexhibit
+// territory, not a blog theme.
+
+#exhibit .text {
+    h1, h2, h3, h4, h5, h6 {
+        margin: 1.4em 0 0.4em 0;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    h1 { font-size: 1.85em; }
+    h2 { font-size: 1.4em; }
+    h3 { font-size: 1.18em; }
+    h4 { font-size: 1.05em; }
+    h5 { font-size: 0.95em; text-transform: uppercase; letter-spacing: 0.04em; }
+    h6 { font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color5); }
+
+    // First heading sits flush with the top of the content block.
+    > h1:first-child, > h2:first-child,
+    > h3:first-child, > h4:first-child { margin-top: 0; }
+
+    // Admin-authored content often uses <div> as a line wrapper
+    // (Google Docs / contenteditable habit). Give them paragraph-like
+    // breathing room so the rendered block doesn't smash together.
+    > div { margin-bottom: 1em; }
+}
+
+// The Eric Meyer reset strips bullets/numbers from every ul/ol. The
+// nav (#index) wants that; admin-authored content (markdown lists,
+// BBCode [list]) does not. Restore default markers inside the
+// rendered text block.
+#exhibit .text ul,
+#exhibit .text ol {
+    margin: 0 0 1em 1.5em;
+    padding: 0;
+}
+#exhibit .text ul { list-style: disc outside; }
+#exhibit .text ol { list-style: decimal outside; }
+#exhibit .text ul ul,
+#exhibit .text ol ol,
+#exhibit .text ul ol,
+#exhibit .text ol ul {
+    margin: 0.25em 0 0.25em 1.5em;
+}
+#exhibit .text li { margin-bottom: 0.25em; }
+
+// Exhibit title rendered in `<div class="top">` at the top of the body —
+// inherits the default h2 weight/margin so it sits with body content.
+
+#index h1 { margin-bottom: 2em; }
+#index h1 a { text-decoration: none; color: var(--color); }
+
+// Hide-section-title escape hatch used by the silent-grouping checkbox
+// on /admin/sections/<id>/edit.
+#index ul.silent_section { margin-bottom: 1em; }
+
+.container { padding: $sidebar-padding; }
+
+.captioning { margin-top: 2px; }
+.title, .caption { font-size: 0.7em; font-style: italic; line-height: 1.2em; }

@@ -1,0 +1,90 @@
+// Mobile responsive: checkbox-driven nav toggle (no JS).
+@use "variables" as *;
+
+// Toggle is hidden on desktop. Label is shown only on mobile.
+#nav-toggle-input { display: none; }
+.index-toggle { display: none; }
+
+@media only screen and (min-width: 320px) and (max-width: $mobile-breakpoint) {
+    body { -webkit-text-size-adjust: 100%; }
+
+    #index {
+        left: -100vw;
+        width: 100vw;
+        height: 100vh;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        z-index: 9997;
+        transition: left 250ms ease-in-out;
+    }
+    // When the hidden checkbox is checked, slide the nav in.
+    #nav-toggle-input:checked ~ #index { left: 0; }
+
+    #exhibit {
+        margin-left: 0;
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 30px;
+    }
+
+    #exhibit img, #exhibit object {
+        max-width: 100%;
+        width: 100%;
+        height: auto;
+    }
+
+    #exhibit .container #img-container { margin-top: 0; }
+    #exhibit .container #img-container div { width: 100%; }
+
+    #index .container,
+    #exhibit .container { padding: 15px; }
+
+    .index-toggle {
+        display: block;
+        height: 35px;
+        width: 35px;
+        background-color: #fff;
+        position: fixed;
+        bottom: 12px;
+        right: 12px;
+        z-index: 5000000;
+        text-indent: -9999px;
+        cursor: pointer;
+        border: 1px solid #000;
+        border-radius: 4px;
+    }
+    .index-toggle::before,
+    .index-toggle::after {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 7px;
+        right: 7px;
+        height: 3px;
+        background: #000;
+    }
+    .index-toggle::before { top: 11px; }
+    .index-toggle::after  { bottom: 11px; }
+
+    body, p, h1, h2, h3, h4 { font-size: 18px; line-height: 24px; }
+    #index .container p, #exhibit .container p { width: auto; }
+    #exhibit .container p { width: auto; margin: 0 0 9px 0; }
+}
+
+.asset { line-height: 0; }
+.asset a { margin-bottom: 0; padding-bottom: 0; line-height: 0; }
+
+.video-container {
+    position: relative;
+    height: 0;
+    overflow: hidden;
+    padding-bottom: 75%;
+}
+.video-container .asset iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.spacer { padding-top: 15px; }

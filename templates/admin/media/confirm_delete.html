@@ -1,0 +1,12 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<h1>Delete media?</h1>
+<p>Delete <code>{{ media.file }}</code>? The file and its derivatives will be removed from disk.</p>
+<form method="post" action="/admin/exhibits/{{ exhibit.id }}/media/{{ media.id }}/delete" class="form-stack">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div class="form-actions">
+    <button type="submit" class="danger">Yes, delete</button>
+    <a href="/admin/exhibits/{{ exhibit.id }}/media" class="btn">Cancel</a>
+  </div>
+</form>
+{% endblock %}

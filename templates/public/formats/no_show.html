@@ -1,0 +1,9 @@
+{% extends "public/layout.html" %}
+
+{% block exhibit_body %}
+<div id="img-container" class="no_show">
+  {%- if !content.is_empty() %}
+  <div class="text">{{ content|safe }}</div>
+  {%- endif %}
+</div>
+{% endblock %}
