@@ -1,3 +1,4 @@
+use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 use actix_multipart::form::tempfile::TempFile;
@@ -309,7 +310,14 @@ async fn save_one(
     // round-tripped through the image crate.
     let mut hasher = Sha256::new();
     hasher.update(&bytes);
-    let sha = format!("{:x}", hasher.finalize());
+    // sha2 0.11 returns `Array<u8, _>` from `hybrid-array`, which doesn't
+    // implement `LowerHex` like the old `GenericArray` did. Format manually
+    // — no need to pull in a hex crate for a single call site.
+    let digest = hasher.finalize();
+    let mut sha = String::with_capacity(digest.len() * 2);
+    for b in &digest {
+        let _ = write!(sha, "{b:02x}");
+    }
 
     // Same hash already attached to this exhibit? Skip everything —
     // don't write the file, don't insert a row. Lets the user re-drop

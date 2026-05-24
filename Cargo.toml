@@ -8,7 +8,7 @@ rust-version = "1.80"
 actix-web = "4"
 actix-files = "0.6"
 actix-multipart = "0.7"
-actix-session = { version = "0.10", features = ["cookie-session"] }
+actix-session = { version = "0.11", features = ["cookie-session"] }
 askama = "0.12"
 askama_actix = "0.14"
 sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "macros", "chrono", "uuid", "json", "migrate"] }
@@ -24,17 +24,16 @@ dotenvy = "0.15"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-actix-web = "0.7"
-thiserror = "1"
+thiserror = "2"
 anyhow = "1"
 image = "0.25"
-fast_image_resize = "5"
 kamadak-exif = "0.6"
 mime = "0.3"
 futures-util = "0.3"
 lettre = { version = "0.11", default-features = false, features = ["smtp-transport", "tokio1-rustls-tls", "builder"] }
 chacha20poly1305 = "0.10"
-sha2 = "0.10"
-pulldown-cmark = { version = "0.12", default-features = false, features = ["html"] }
+sha2 = "0.11"
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
 ammonia = "4"
 regex = "1"
 
