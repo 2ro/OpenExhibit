@@ -61,6 +61,111 @@ pub fn render_with(input: &str, opts: RenderOptions) -> String {
     sanitizer().clean(&html_out).to_string()
 }
 
+/// Plain-text excerpt for `<meta name="description">` and similar.
+/// Renders admin-authored markup, strips all tags + entities, collapses
+/// whitespace, and truncates at a word boundary near `max_chars`. Empty
+/// input round-trips to empty.
+#[must_use]
+pub fn excerpt(input: &str, max_chars: usize) -> String {
+    let html = render_with(input, RenderOptions::default());
+    let text = strip_tags(&html);
+    let mut collapsed = String::with_capacity(text.len());
+    let mut last_was_space = true;
+    for c in text.chars() {
+        if c.is_whitespace() {
+            if !last_was_space {
+                collapsed.push(' ');
+                last_was_space = true;
+            }
+        } else {
+            collapsed.push(c);
+            last_was_space = false;
+        }
+    }
+    let trimmed = collapsed.trim();
+    if trimmed.chars().count() <= max_chars {
+        return trimmed.to_string();
+    }
+    // Truncate at the last word boundary inside the budget so we don't
+    // chop a word mid-letter (which reads worse in SERP than ellipsis).
+    let mut cut = 0usize;
+    let mut last_space_byte = 0usize;
+    for (i, (byte_idx, c)) in trimmed.char_indices().enumerate() {
+        if i >= max_chars {
+            break;
+        }
+        cut = byte_idx + c.len_utf8();
+        if c == ' ' {
+            last_space_byte = byte_idx;
+        }
+    }
+    let end = if last_space_byte > 0 {
+        last_space_byte
+    } else {
+        cut
+    };
+    let mut out = trimmed[..end].trim_end().to_string();
+    out.push('…');
+    out
+}
+
+fn strip_tags(html: &str) -> String {
+    let mut out = String::with_capacity(html.len());
+    let mut in_tag = false;
+    let mut in_entity = false;
+    let mut entity = String::new();
+    for c in html.chars() {
+        if in_tag {
+            if c == '>' {
+                in_tag = false;
+                // Collapse tag boundaries to a space so adjacent inline
+                // text doesn't run together (`<p>a</p><p>b</p>` → `a b`).
+                if !out.ends_with(' ') {
+                    out.push(' ');
+                }
+            }
+            continue;
+        }
+        match c {
+            '<' => in_tag = true,
+            '&' => {
+                in_entity = true;
+                entity.clear();
+            }
+            ';' if in_entity => {
+                let decoded = match entity.as_str() {
+                    "amp" => '&',
+                    "lt" => '<',
+                    "gt" => '>',
+                    "quot" | "ldquo" | "rdquo" => '"',
+                    "apos" | "#39" | "lsquo" | "rsquo" => '\'',
+                    "hellip" => '…',
+                    "mdash" => '—',
+                    "ndash" => '–',
+                    // Unknown / numeric / nbsp all collapse to a space; the
+                    // whitespace pass that follows normalises runs anyway.
+                    _ => ' ',
+                };
+                out.push(decoded);
+                in_entity = false;
+            }
+            _ if in_entity => {
+                if entity.len() < 8 && (c.is_ascii_alphanumeric() || c == '#') {
+                    entity.push(c);
+                } else {
+                    // Malformed entity — flush what we have and treat as text.
+                    out.push('&');
+                    out.push_str(&entity);
+                    out.push(c);
+                    in_entity = false;
+                }
+            }
+            _ => out.push(c),
+        }
+    }
+    out
+}
+
 /// Wrap each `>` line in `<p class="greentext">`. The `>` becomes
 /// `&gt;`, the content is HTML-escaped, blank lines pass through
 /// unmodified so paragraph breaks survive.
@@ -240,6 +345,33 @@ mod tests {
     fn empty_is_empty() {
         assert_eq!(render_with("", RenderOptions::default()), "");
         assert_eq!(render_with("   \n\t  ", RenderOptions::default()), "");
+    }
+
+    #[test]
+    fn excerpt_strips_markup_and_collapses_whitespace() {
+        let e = excerpt("**Hello** *world*\n\nSecond paragraph here.", 200);
+        assert_eq!(e, "Hello world Second paragraph here.");
+    }
+
+    #[test]
+    fn excerpt_decodes_common_entities() {
+        let e = excerpt("Q&amp;A &mdash; one&hellip;", 200);
+        assert_eq!(e, "Q&A — one…");
+    }
+
+    #[test]
+    fn excerpt_truncates_at_word_boundary_with_ellipsis() {
+        let long = "one two three four five six seven eight nine ten eleven twelve";
+        let e = excerpt(long, 20);
+        assert!(e.ends_with('…'), "got: {e}");
+        assert!(!e.contains("thr…"), "should not chop mid-word: {e}");
+        assert!(e.chars().count() <= 21, "too long: {} chars in {e}", e.chars().count());
+    }
+
+    #[test]
+    fn excerpt_empty_input_is_empty() {
+        assert_eq!(excerpt("", 100), "");
+        assert_eq!(excerpt("   \n\t  ", 100), "");
     }
 
     #[test]

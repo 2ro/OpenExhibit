@@ -6,6 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {%- if let Some(d) = base.description %}
 <meta name="description" content="{{ d }}">
+<meta property="og:title" content="{{ base.page_title }} : {{ base.obj_name }}">
+<meta property="og:description" content="{{ d }}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{ base.page_title }} : {{ base.obj_name }}">
+<meta name="twitter:description" content="{{ d }}">
 {%- endif %}
 <link rel="stylesheet" href="/static/css/public.css" type="text/css">
 {%- if !base.theme_text_color.is_empty() || !base.theme_bg_color.is_empty() %}
@@ -28,8 +34,9 @@
 {%- block extra_head %}{% endblock %}
 </head>
 <body class="{{ base.body_kind }} section-{{ base.section_id }} exhibit-{{ base.exhibit_id }} format-{{ base.format }}">
-<input type="checkbox" id="nav-toggle-input" hidden>
-<label for="nav-toggle-input" class="index-toggle">Menu</label>
+<a class="skip-link" href="#exhibit">Skip to content</a>
+<input type="checkbox" id="nav-toggle-input" class="nav-toggle-input" aria-label="Toggle menu">
+<label for="nav-toggle-input" class="index-toggle" aria-controls="index">Menu</label>
 <div id="index">
 <div class="container">
 
@@ -40,15 +47,15 @@
 </div>
 </div>
 
-<div id="exhibit">
+<main id="exhibit">
 <div class="container">
 
-<div class="top"><h2>{{ base.page_title }}</h2></div>
+<div class="top"><h1 class="page-title">{{ base.page_title }}</h1></div>
 <!-- text and image -->
 {% block exhibit_body %}{% endblock %}
 <!-- end text and image -->
 
 </div>
-</div>
+</main>
 </body>
 </html>

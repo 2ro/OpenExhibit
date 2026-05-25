@@ -91,13 +91,13 @@ h3, h4 { font-size: $body-size; margin-bottom: 1em; }
 #exhibit { margin: 0 0 0 $sidebar-width; }
 
 #index ul { list-style: none; margin: 0; padding: 0; }
-#index ul.section { margin-bottom: 1em; }
+#index li.section { margin-bottom: 1em; }
 
 #index ul#all_tags { list-style: none; margin-bottom: 1em; }
 #index ul#all_tags li { display: inline; margin-right: 3px; }
 
-#index ul.section span.section_title,
-#index ul.section span.section_title a { color: var(--color); font-weight: var(--bold); }
+#index li.section span.section_title,
+#index li.section span.section_title a { color: var(--color); font-weight: var(--bold); }
 
 // Active section gets the full bold to stand out from the semi-bold siblings.
 #index span.active_section_title,
@@ -109,10 +109,10 @@ li.active a:hover,
 li.active a:active,
 li.active a:visited,
 li span.active,
-#index ul.section li.active a:link,
-#index ul.section li.active a:hover,
-#index ul.section li.active a:active,
-#index ul.section li.active a:visited {
+#index li.section li.active a:link,
+#index li.section li.active a:hover,
+#index li.section li.active a:active,
+#index li.section li.active a:visited {
     font-weight: normal;
     color: var(--color);
 }

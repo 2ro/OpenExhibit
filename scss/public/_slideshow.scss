@@ -12,10 +12,11 @@
 
 .slideshow-nav {
     display: flex;
-    gap: 1.5rem;
+    gap: 1.25rem;
     align-items: center;
     margin: 0 0 1em 0;
     font-size: 0.9em;
+    flex-wrap: wrap;
 }
 .slideshow-nav .slide-previous,
 .slideshow-nav .slide-next {
@@ -40,9 +41,6 @@
 // :target-driven slide visibility. Hide all slides by default,
 // show the one whose id matches the URL hash. The first slide
 // carries `.slide--initial` and shows when no hash is present.
-// (We can't use `:first-child` because the autoplay-tap label
-// and autoplay-indicator div are siblings ahead of the slides
-// inside #slideshow-wrapper.)
 .slideshow .slide { display: none; }
 .slideshow .slide:target { display: flex; }
 .slideshow:not(:has(.slide:target)) .slide--initial { display: flex; }
@@ -72,72 +70,71 @@
 
 // ─── Autoplay mode (JS-free) ──────────────────────────────────────────────
 //
-// A hidden checkbox above the slideshow toggles autoplay. The `<label>`
-// over the slide area is the tap target. When the checkbox is checked,
-// `:has()` flips the wrapper into a CSS-grid stack with all slides
-// occupying the same cell, and each slide runs the server-computed
-// `oe-autoslide` keyframes with a per-slide `animation-delay`.
-//
-// The Prev / Next anchors above the picture stay clickable because
-// they live above the tap-label (z-index 2 vs 1) — pressing them
-// navigates the URL hash; the autoplay animation continues underneath.
-//
-// Indicator pill (top-right of the slide area) fades from "Tap to
-// autoplay" to "Autoplaying" via opacity transitions on both labels.
+// A hidden checkbox above the slideshow toggles autoplay. The Play/Pause
+// control inside the nav row is a `<label for="oe-autoplay">` that flips
+// the checkbox. When the checkbox is checked, `:has()` is not needed —
+// the checkbox precedes `#img-container` as a sibling, so a sibling
+// combinator (`~`) drives both the slide-stacking layout and the
+// toggle's own pause-state styling.
 
 #slideshow-wrapper { position: relative; }
 
-.autoplay-tap {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    cursor: pointer;
-    background: transparent;
-}
-// Nav rows + caption sit ABOVE the tap label so Prev / Next / caption
-// links stay clickable. The image area falls through to the label
-// underneath, so tapping the picture toggles autoplay.
-.slideshow .slideshow-nav,
-.slideshow .captioning {
-    position: relative;
-    z-index: 2;
-}
-
-.autoplay-indicator {
-    position: absolute;
-    // Push below the top nav row so the pill sits over the image
-    // instead of the Previous / 1 of N / Next controls.
-    top: 2.5rem;
-    right: 0.5rem;
-    z-index: 3;
+// Inline Play / Pause pill that lives inside the nav row above the slide.
+// Implemented as a <label> so it works without JS via the hidden checkbox.
+.autoplay-toggle {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
-    padding: 0.3rem 0.65rem;
-    background: color-mix(in srgb, var(--bg) 88%, var(--color));
-    color: var(--color);
-    border: 1px solid color-mix(in srgb, var(--color) 18%, transparent);
+    padding: 0.25rem 0.7rem;
+    margin: 0;
+    border: 1px solid color-mix(in srgb, var(--color) 35%, transparent);
     border-radius: 999px;
-    font-size: 0.75rem;
+    background: var(--bg);
+    color: var(--color);
+    cursor: pointer;
+    font-size: 0.85em;
     line-height: 1;
-    opacity: 0.45;
-    transition: opacity 250ms ease;
-    pointer-events: none;
-
-    .dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--color);
-        opacity: 0.5;
-        transition: opacity 250ms ease;
-    }
-    .label-on  { display: none; }
-    .label-off { display: inline; }
+    user-select: none;
+    transition: background 120ms ease, border-color 120ms ease;
 }
-#slideshow-wrapper:hover .autoplay-indicator,
-.oe-autoplay-state:checked ~ #img-container .autoplay-indicator {
-    opacity: 1;
+.autoplay-toggle:hover {
+    background: color-mix(in srgb, var(--color) 8%, var(--bg));
+    border-color: color-mix(in srgb, var(--color) 55%, transparent);
+}
+// Triangle "play" glyph drawn from CSS borders — no JS, no font icon.
+.autoplay-toggle__icon {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 8px solid currentColor;
+}
+.autoplay-toggle__pause { display: none; }
+.autoplay-toggle__play  { display: inline; }
+
+// Visible keyboard focus — the hidden checkbox carries focus, so we
+// reflect it onto the label using a sibling selector.
+.oe-autoplay-state:focus-visible ~ #img-container .autoplay-toggle {
+    outline: 2px solid var(--color);
+    outline-offset: 2px;
+}
+
+// Checked → pause state. Swap the glyph to two vertical bars, swap
+// label text, and tint the pill so the active state reads at a glance.
+.oe-autoplay-state:checked ~ #img-container .autoplay-toggle {
+    background: color-mix(in srgb, var(--color) 12%, var(--bg));
+    border-color: color-mix(in srgb, var(--color) 60%, transparent);
+    .autoplay-toggle__play  { display: none; }
+    .autoplay-toggle__pause { display: inline; }
+    .autoplay-toggle__icon {
+        // Two vertical bars via box-shadow on a small filled box.
+        width: 3px;
+        height: 10px;
+        border: none;
+        background: currentColor;
+        box-shadow: 6px 0 0 currentColor;
+    }
 }
 
 // Slide stack + animation kick in when the toggle is checked.
@@ -151,21 +148,11 @@
     opacity: 0;
     animation: oe-autoslide var(--total-seconds, 0s) linear infinite;
 }
-// Set --total-seconds on the wrapper from the inline style on the first
-// slide so the keyframes know the cycle length. We use a CSS var to
-// avoid having to template it onto every slide.
-.oe-autoplay-state:checked ~ #img-container .autoplay-indicator {
-    background: color-mix(in srgb, var(--color) 14%, var(--bg));
-    border-color: color-mix(in srgb, var(--color) 40%, transparent);
-    .dot {
-        opacity: 1;
-        animation: oe-pulse 1.6s ease-in-out infinite;
-    }
-    .label-on  { display: inline; }
-    .label-off { display: none; }
-}
 
-@keyframes oe-pulse {
-    0%, 100% { transform: scale(1);   opacity: 0.6; }
-    50%      { transform: scale(1.4); opacity: 1;   }
+// Respect prefers-reduced-motion: keep autoplay opt-in but skip the
+// crossfade — slides snap between states with no motion.
+@media (prefers-reduced-motion: reduce) {
+    .oe-autoplay-state:checked ~ #img-container #slideshow-wrapper > .slide {
+        animation-timing-function: steps(1, end);
+    }
 }

@@ -28,24 +28,20 @@
   {%- endif %}
 
   <div id="slideshow-wrapper" style="--total-seconds: {{ total_seconds }}s;">
-    {%- if autoplay_supported %}
-    {#- Transparent tap layer covering the slide area; toggling it
-        flips the parent into autoplay mode via :has() in the SCSS. -#}
-    <label for="oe-autoplay" class="autoplay-tap" aria-label="Tap to start or stop autoplay"></label>
-    <div class="autoplay-indicator" aria-hidden="true">
-      <span class="dot"></span>
-      <span class="label-on">Autoplaying</span>
-      <span class="label-off">Tap to autoplay</span>
-    </div>
-    {%- endif %}
-
     {%- for m in media %}
     <div class="slide{% if loop.first %} slide--initial{% endif %}" id="s-{{ loop.index }}"
          style="animation-delay: calc({{ slide_seconds }}s * {{ loop.index0 }});">
-      <div class="slideshow-nav">
-        <a class="slide-previous" href="#s-{% if loop.first %}{{ media.len() }}{% else %}{{ loop.index - 1 }}{% endif %}">&larr; Previous</a>
-        <span class="position">{{ loop.index }} / {{ media.len() }}</span>
-        <a class="slide-next" href="#s-{% if loop.last %}1{% else %}{{ loop.index + 1 }}{% endif %}">Next &rarr;</a>
+      <div class="slideshow-nav" role="group" aria-label="Slideshow controls">
+        <a class="slide-previous" href="#s-{% if loop.first %}{{ media.len() }}{% else %}{{ loop.index - 1 }}{% endif %}" rel="prev">&larr; Previous</a>
+        <span class="position" aria-label="Slide {{ loop.index }} of {{ media.len() }}">{{ loop.index }} / {{ media.len() }}</span>
+        {%- if autoplay_supported %}
+        <label for="oe-autoplay" class="autoplay-toggle">
+          <span class="autoplay-toggle__icon" aria-hidden="true"></span>
+          <span class="autoplay-toggle__play">Play</span>
+          <span class="autoplay-toggle__pause">Pause</span>
+        </label>
+        {%- endif %}
+        <a class="slide-next" href="#s-{% if loop.last %}1{% else %}{{ loop.index + 1 }}{% endif %}" rel="next">Next &rarr;</a>
       </div>
       <div class="picture">
         {%- if m.is_video %}
@@ -56,10 +52,10 @@
         <img src="{{ m.file_url }}" alt="{{ m.title }}" width="{{ m.width }}" height="{{ m.height }}" loading="lazy">
         {%- endif %}
       </div>
-      <div class="slideshow-nav">
-        <a class="slide-previous" href="#s-{% if loop.first %}{{ media.len() }}{% else %}{{ loop.index - 1 }}{% endif %}">&larr; Previous</a>
-        <span class="position">{{ loop.index }} / {{ media.len() }}</span>
-        <a class="slide-next" href="#s-{% if loop.last %}1{% else %}{{ loop.index + 1 }}{% endif %}">Next &rarr;</a>
+      <div class="slideshow-nav" role="group" aria-label="Slideshow controls">
+        <a class="slide-previous" href="#s-{% if loop.first %}{{ media.len() }}{% else %}{{ loop.index - 1 }}{% endif %}" rel="prev">&larr; Previous</a>
+        <span class="position" aria-label="Slide {{ loop.index }} of {{ media.len() }}">{{ loop.index }} / {{ media.len() }}</span>
+        <a class="slide-next" href="#s-{% if loop.last %}1{% else %}{{ loop.index + 1 }}{% endif %}" rel="next">Next &rarr;</a>
       </div>
       {%- if !m.title.is_empty() || !m.caption.is_empty() %}
       <div class="captioning">

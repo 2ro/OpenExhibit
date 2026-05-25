@@ -145,6 +145,12 @@ struct ExhibitForm {
     link_target: Option<String>,
     #[serde(default)]
     custom_css: String,
+    /// Per-exhibit color picker — same format as the site-wide knobs
+    /// in /admin/settings. Empty → inherit from settings → SCSS default.
+    #[serde(default)]
+    theme_text_color: String,
+    #[serde(default)]
+    theme_bg_color: String,
     /// Routes the post-save redirect: `media` → /admin/exhibits/{id}/media,
     /// anything else → /admin/exhibits. Set by the "Save & add media"
     /// button via `<button name="next" value="media">`.
@@ -750,8 +756,10 @@ async fn update_exhibit(pool: &PgPool, id: i32, form: &ExhibitForm) -> AppResult
              SET title = $1, url = $2, section_id = $3, format = $4, thumbs = $5,
                  status = $6, content = $7, is_home = $8, hidden = $9,
                  link = $10, link_target = $11, custom_css = $12,
-                 section_top = $13, is_new = $14, updated_at = now()
-             WHERE id = $15",
+                 section_top = $13, is_new = $14,
+                 theme_text_color = $15, theme_bg_color = $16,
+                 updated_at = now()
+             WHERE id = $17",
         )
         .bind(&form.title)
         .bind(&normalized_url)
@@ -767,6 +775,8 @@ async fn update_exhibit(pool: &PgPool, id: i32, form: &ExhibitForm) -> AppResult
         .bind(&form.custom_css)
         .bind(form.section_top.is_some())
         .bind(form.is_new.is_some())
+        .bind(sanitize_color(&form.theme_text_color))
+        .bind(sanitize_color(&form.theme_bg_color))
         .bind(id)
         .execute(pool)
         .await?;
@@ -778,8 +788,10 @@ async fn update_exhibit(pool: &PgPool, id: i32, form: &ExhibitForm) -> AppResult
              SET title = $1, url = $2, section_id = $3, format = $4, thumbs = $5,
                  status = $6, content = $7, is_home = $8, hidden = $9,
                  password = $10, link = $11, link_target = $12, custom_css = $13,
-                 section_top = $14, is_new = $15, updated_at = now()
-             WHERE id = $16",
+                 section_top = $14, is_new = $15,
+                 theme_text_color = $16, theme_bg_color = $17,
+                 updated_at = now()
+             WHERE id = $18",
         )
         .bind(&form.title)
         .bind(&normalized_url)
@@ -796,6 +808,8 @@ async fn update_exhibit(pool: &PgPool, id: i32, form: &ExhibitForm) -> AppResult
         .bind(&form.custom_css)
         .bind(form.section_top.is_some())
         .bind(form.is_new.is_some())
+        .bind(sanitize_color(&form.theme_text_color))
+        .bind(sanitize_color(&form.theme_bg_color))
         .bind(id)
         .execute(pool)
         .await?;
@@ -810,6 +824,27 @@ async fn update_exhibit(pool: &PgPool, id: i32, form: &ExhibitForm) -> AppResult
     }
     sync_tags(pool, id, &form.tag_names).await?;
     Ok(())
+}
+
+/// Whitelist what we accept from the `<input type="color">` picker
+/// before splicing it into the inline `<style>` block. We only emit
+/// `#rgb` / `#rrggbb`; anything else (including the empty string) is
+/// treated as "no override" so a malicious form post can't inject CSS.
+fn sanitize_color(raw: &str) -> String {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return String::new();
+    }
+    if !trimmed.starts_with('#') {
+        return String::new();
+    }
+    let hex = &trimmed[1..];
+    if (hex.len() == 3 || hex.len() == 6) && hex.bytes().all(|b| b.is_ascii_hexdigit()) {
+        // Normalize to lower-case so downstream comparisons are stable.
+        format!("#{}", hex.to_ascii_lowercase())
+    } else {
+        String::new()
+    }
 }
 
 fn normalize_url(raw: &str) -> String {
@@ -843,7 +878,31 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 
 #[cfg(test)]
 mod tests {
-    use super::sanitize_external_link;
+    use super::{sanitize_color, sanitize_external_link};
+
+    #[test]
+    fn color_accepts_valid_hex_only() {
+        assert_eq!(sanitize_color("#abcdef"), "#abcdef");
+        assert_eq!(sanitize_color("#ABCDEF"), "#abcdef");
+        assert_eq!(sanitize_color("#abc"), "#abc");
+        assert_eq!(sanitize_color("  #1A2B3C  "), "#1a2b3c");
+    }
+
+    #[test]
+    fn color_rejects_anything_else() {
+        for bad in [
+            "",
+            "abcdef",
+            "#xyz",
+            "#1234",
+            "red",
+            "rgb(0,0,0)",
+            "); body{display:none}",
+            "#abc; }",
+        ] {
+            assert_eq!(sanitize_color(bad), "", "should reject: {bad:?}");
+        }
+    }
 
     #[test]
     fn empty_link_is_empty() {

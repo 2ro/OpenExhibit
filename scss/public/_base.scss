@@ -38,11 +38,11 @@ object { display: block; }
     padding-top: 1.5em;
 }
 
-#index ul.section span.section_title,
-#index ul.section span.section_title a { cursor: pointer; font-weight: var(--bold); }
+#index li.section span.section_title,
+#index li.section span.section_title a { cursor: pointer; font-weight: var(--bold); }
 
-#index ul.section span.subsection_title,
-#index ul.section span.subsection_title a { cursor: pointer; }
+#index li.section span.subsection_title,
+#index li.section span.subsection_title a { cursor: pointer; }
 
 // All nav links fade to --color5 on hover (indexhibit.org uses
 // `opacity: 0.5` to the same effect). No text-indent — the live site

@@ -4,6 +4,9 @@
 // visual_index: responsive grid of square-ish thumbs. `--thumb-size`
 // comes inline from the template (driven by exhibits.thumbs) so the
 // admin's thumbnail-size input actually controls the grid track size.
+// Square-cropped tiles so the grid stays uniform regardless of source
+// aspect ratio. `object-fit: cover` keeps subjects in frame; the
+// lightbox shows the full untouched image when clicked.
 .visual_index .thumbs {
     list-style: none;
     margin: 0;
@@ -19,15 +22,18 @@
 .visual_index .thumbs .thumb-img {
     display: block;
     overflow: hidden;
+    aspect-ratio: 1 / 1;
+    background: color-mix(in srgb, var(--color) 6%, var(--bg));
 }
 .visual_index .thumbs .thumb-img img {
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
     display: block;
     transition: transform 200ms ease;
 }
 .visual_index .thumbs .thumb-img:hover img {
-    transform: scale(1.02);
+    transform: scale(1.04);
 }
 .visual_index .thumbs .captioning {
     margin-top: 4px;

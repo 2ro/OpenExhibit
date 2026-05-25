@@ -55,6 +55,10 @@ pub struct Exhibit {
     pub extra: JsonValue,
     /// Per-exhibit CSS rendered inline in the page <head>. Empty by default.
     pub custom_css: String,
+    /// Per-exhibit override of `--color` / `--bg`. Empty falls back to
+    /// the site-wide pickers in settings, then to the SCSS defaults.
+    pub theme_text_color: String,
+    pub theme_bg_color: String,
 }
 
 impl Exhibit {

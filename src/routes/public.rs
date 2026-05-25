@@ -187,11 +187,36 @@ async fn render_exhibit(
     let markup_opts = crate::markup::RenderOptions {
         greentext: settings.enable_greentext,
     };
+    // SEO: auto-derive <meta description> from the exhibit's content.
+    // Empty content falls back to None so we don't emit an empty meta tag
+    // that crawlers would penalise.
+    let description = {
+        let excerpt = crate::markup::excerpt(&exhibit.content, 155);
+        if excerpt.is_empty() {
+            None
+        } else {
+            Some(excerpt)
+        }
+    };
+    // Effective theme colors: per-exhibit picker overrides site-wide
+    // picker; either empty value falls back to the SCSS default. The
+    // user's per-exhibit custom_css textarea still wins because it
+    // renders later in the <head>.
+    let theme_text_color = if exhibit.theme_text_color.is_empty() {
+        settings.theme_text_color.clone()
+    } else {
+        exhibit.theme_text_color.clone()
+    };
+    let theme_bg_color = if exhibit.theme_bg_color.is_empty() {
+        settings.theme_bg_color.clone()
+    } else {
+        exhibit.theme_bg_color.clone()
+    };
     let base = BaseFields {
         site_lang: settings.site_lang.clone(),
         page_title: exhibit.title.clone(),
         obj_name: settings.obj_name.clone(),
-        description: None,
+        description,
         body_kind: exhibit.kind.clone(),
         section_id: exhibit.section_id,
         exhibit_id: exhibit.id,
@@ -207,8 +232,8 @@ async fn render_exhibit(
         nav_sections,
         site_custom_css: settings.custom_css.clone(),
         exhibit_custom_css: exhibit.custom_css.clone(),
-        theme_text_color: settings.theme_text_color.clone(),
-        theme_bg_color: settings.theme_bg_color.clone(),
+        theme_text_color,
+        theme_bg_color,
     };
 
     let html = formats::render(&exhibit, &media, base, settings.enable_greentext)?;

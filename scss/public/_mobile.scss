@@ -1,9 +1,38 @@
 // Mobile responsive: checkbox-driven nav toggle (no JS).
 @use "variables" as *;
 
-// Toggle is hidden on desktop. Label is shown only on mobile.
-#nav-toggle-input { display: none; }
+// Toggle is visually hidden but keyboard-focusable (so mobile users
+// with a keyboard / switch device can open the menu). Label is shown
+// only on mobile and acts as the burger button.
+.nav-toggle-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
 .index-toggle { display: none; }
+.nav-toggle-input:focus-visible ~ .index-toggle {
+    outline: 2px solid var(--color);
+    outline-offset: 2px;
+}
+// Skip-to-content link: invisible until focused, then jumps into view.
+.skip-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0.5rem 0.85rem;
+    background: var(--color);
+    color: var(--bg);
+    text-decoration: none;
+    z-index: 10000;
+    transform: translateY(-110%);
+    transition: transform 120ms ease;
+}
+.skip-link:focus { transform: translateY(0); }
 
 @media only screen and (min-width: 320px) and (max-width: $mobile-breakpoint) {
     body { -webkit-text-size-adjust: 100%; }

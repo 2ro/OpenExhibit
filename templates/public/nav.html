@@ -1,36 +1,36 @@
-<ul id="sections">
+<nav id="sections" aria-label="Site sections">
+<ul class="sections-list">
 {%- for sec in base.nav_sections %}
-  <ul class="section{% if sec.id == base.section_id %} active_section{% endif %}{% if sec.hide_title %} silent_section{% endif %}" id="section_{{ sec.id }}">
-    <li>
-      {%- if !sec.hide_title %}
-      <span class="section_title{% if sec.id == base.section_id %} active_section_title{% endif %}">
-        {%- if let Some(top) = sec.top_exhibit.as_ref() %}
-          <a href="{{ top.href }}"{% if top.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ sec.name }}</a>
-        {%- else %}
-          {{ sec.name }}
-        {%- endif %}
-      </span>
+  <li class="section{% if sec.id == base.section_id %} active_section{% endif %}{% if sec.hide_title %} silent_section{% endif %}" id="section_{{ sec.id }}">
+    {%- if !sec.hide_title %}
+    <span class="section_title{% if sec.id == base.section_id %} active_section_title{% endif %}">
+      {%- if let Some(top) = sec.top_exhibit.as_ref() %}
+        <a href="{{ top.href }}"{% if top.id == base.exhibit_id %} aria-current="page"{% endif %}{% if top.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ sec.name }}</a>
+      {%- else %}
+        {{ sec.name }}
       {%- endif %}
-      {%- if !sec.children.is_empty() %}
-      <ul class="subsection">
-        {%- for ex in sec.children %}
-        <li class="exhibit_title{% if ex.id == base.exhibit_id %} active{% endif %}" id="exhibit_{{ ex.id }}">
-          <a href="{{ ex.href }}"{% if ex.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ ex.title }}{% if ex.is_new %}<sup class="new_exhibit"></sup>{% endif %}</a>
-        </li>
-        {%- endfor %}
-      </ul>
-      {%- endif %}
-      {%- for sub in sec.subsections %}
-      <span class="subsection_title">{{ sub.title }}</span>
-      <ul class="subsection">
-        {%- for ex in sub.exhibits %}
-        <li class="exhibit_title{% if ex.id == base.exhibit_id %} active{% endif %}" id="exhibit_{{ ex.id }}">
-          <a href="{{ ex.href }}"{% if ex.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ ex.title }}{% if ex.is_new %}<sup class="new_exhibit"></sup>{% endif %}</a>
-        </li>
-        {%- endfor %}
-      </ul>
+    </span>
+    {%- endif %}
+    {%- if !sec.children.is_empty() %}
+    <ul class="subsection">
+      {%- for ex in sec.children %}
+      <li class="exhibit_title{% if ex.id == base.exhibit_id %} active{% endif %}" id="exhibit_{{ ex.id }}">
+        <a href="{{ ex.href }}"{% if ex.id == base.exhibit_id %} aria-current="page"{% endif %}{% if ex.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ ex.title }}{% if ex.is_new %}<sup class="new_exhibit" aria-label="new"></sup>{% endif %}</a>
+      </li>
       {%- endfor %}
-    </li>
-  </ul>
+    </ul>
+    {%- endif %}
+    {%- for sub in sec.subsections %}
+    <span class="subsection_title">{{ sub.title }}</span>
+    <ul class="subsection">
+      {%- for ex in sub.exhibits %}
+      <li class="exhibit_title{% if ex.id == base.exhibit_id %} active{% endif %}" id="exhibit_{{ ex.id }}">
+        <a href="{{ ex.href }}"{% if ex.id == base.exhibit_id %} aria-current="page"{% endif %}{% if ex.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ ex.title }}{% if ex.is_new %}<sup class="new_exhibit" aria-label="new"></sup>{% endif %}</a>
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- endfor %}
+  </li>
 {%- endfor %}
 </ul>
+</nav>
