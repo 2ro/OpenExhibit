@@ -12,7 +12,10 @@
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--thumb-size, 180px), 1fr));
+    // min(…, 100%) caps the track minimum at the container width so a
+    // thumb-size wider than the viewport collapses to one full-width
+    // column instead of overflowing and forcing horizontal scroll.
+    grid-template-columns: repeat(auto-fill, minmax(min(var(--thumb-size, 180px), 100%), 1fr));
     gap: 12px;
 }
 .visual_index .thumbs .thumb {
@@ -46,7 +49,7 @@
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
     gap: 10px;
 }
 .thickbox .thumbs li { margin: 0; line-height: 0; }
@@ -55,7 +58,7 @@
 // documenta: looser grid, larger cells, captions visible under each.
 .documenta .documenta-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
     gap: 20px;
 }
 .documenta .documenta-grid .cell { line-height: 0; }
@@ -72,7 +75,7 @@
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
     gap: 12px;
 }
 .tag_display .thumbs li { margin: 0; line-height: 0; }
