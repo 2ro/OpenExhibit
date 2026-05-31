@@ -748,6 +748,9 @@ async fn update_exhibit(pool: &PgPool, id: i32, form: &ExhibitForm) -> AppResult
     let normalized_url = normalize_url(&form.url);
     let link = sanitize_external_link(&form.link)?;
     let link_target = form.link_target.is_some() && !link.is_empty();
+    // Strip `<` so per-exhibit custom CSS can't break out of the inline
+    // <style> block it is rendered into (layout.html emits it with |safe).
+    let custom_css = crate::markup::sanitize_custom_css(&form.custom_css);
 
     // Only update password if the field was set (non-empty).
     if form.password.is_empty() {
@@ -772,7 +775,7 @@ async fn update_exhibit(pool: &PgPool, id: i32, form: &ExhibitForm) -> AppResult
         .bind(form.hidden.is_some())
         .bind(&link)
         .bind(link_target)
-        .bind(&form.custom_css)
+        .bind(&custom_css)
         .bind(form.section_top.is_some())
         .bind(form.is_new.is_some())
         .bind(sanitize_color(&form.theme_text_color))
@@ -805,7 +808,7 @@ async fn update_exhibit(pool: &PgPool, id: i32, form: &ExhibitForm) -> AppResult
         .bind(&password_hash)
         .bind(&link)
         .bind(link_target)
-        .bind(&form.custom_css)
+        .bind(&custom_css)
         .bind(form.section_top.is_some())
         .bind(form.is_new.is_some())
         .bind(sanitize_color(&form.theme_text_color))

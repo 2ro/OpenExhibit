@@ -109,6 +109,26 @@ pub fn excerpt(input: &str, max_chars: usize) -> String {
     out
 }
 
+/// Sanitize admin-authored custom CSS before it is spliced verbatim into an
+/// inline `<style>` block (site-wide and per-exhibit themes render with the
+/// `|safe` filter, so Askama does no escaping there).
+///
+/// A `<style>` element is HTML *rawtext*: the only way to terminate it — and
+/// thus break out into arbitrary markup like `</style><img onerror=…>` — is a
+/// literal `<`. We strip every `<`, which makes the breakout impossible with
+/// no chance of filter-bypass reconstruction (there is simply no `<` left to
+/// form `</style`). `>` is deliberately kept so the CSS child combinator
+/// (`.parent > .child`) keeps working; a bare `>` cannot open a tag. The only
+/// casualty is the uncommon media-range syntax (`@media (width < 600px)`), for
+/// which `max-width` is the portable equivalent.
+///
+/// This is defense-in-depth: the response CSP (`script-src 'self'`) already
+/// blocks inline-script execution, and the field is admin-only.
+#[must_use]
+pub fn sanitize_custom_css(raw: &str) -> String {
+    raw.replace('<', "")
+}
+
 fn strip_tags(html: &str) -> String {
     let mut out = String::with_capacity(html.len());
     let mut in_tag = false;
@@ -372,6 +392,34 @@ mod tests {
     fn excerpt_empty_input_is_empty() {
         assert_eq!(excerpt("", 100), "");
         assert_eq!(excerpt("   \n\t  ", 100), "");
+    }
+
+    #[test]
+    fn custom_css_strips_style_breakout() {
+        // The classic breakout payload must not survive intact.
+        let out = sanitize_custom_css("a{}</style><script>alert(1)</script>");
+        assert!(!out.contains('<'), "all `<` removed: {out}");
+        assert!(!out.to_lowercase().contains("</style"), "no end tag: {out}");
+    }
+
+    #[test]
+    fn custom_css_no_reconstruction() {
+        // Stripping all `<` leaves nothing that can recombine into `</style`.
+        let out = sanitize_custom_css("</sty</stylele>p{}");
+        assert!(!out.contains('<'), "got: {out}");
+    }
+
+    #[test]
+    fn custom_css_preserves_child_combinator() {
+        let css = ".nav > li > a { color: red; }";
+        // `>` is kept; a bare `>` cannot open a tag.
+        assert_eq!(sanitize_custom_css(css), css);
+    }
+
+    #[test]
+    fn custom_css_passes_through_ordinary_rules() {
+        let css = "body { background: #fff; }\n.thumb img { object-fit: cover; }";
+        assert_eq!(sanitize_custom_css(css), css);
     }
 
     #[test]

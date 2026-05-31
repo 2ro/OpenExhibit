@@ -102,6 +102,9 @@ async fn edit_post(
     // a :root override at render time.
     let text_color = normalize_color(&form.theme_text_color);
     let bg_color = normalize_color(&form.theme_bg_color);
+    // Strip `<` so custom CSS can't break out of the inline <style> block it
+    // is rendered into (layout.html emits it with |safe).
+    let custom_css = crate::markup::sanitize_custom_css(&form.custom_css);
 
     let pass_clause = if form.smtp_pass.is_empty() {
         ""
@@ -144,7 +147,7 @@ async fn edit_post(
         .bind(smtp_port)
         .bind(form.smtp_user.trim())
         .bind(form.smtp_from.trim())
-        .bind(&form.custom_css)
+        .bind(&custom_css)
         .bind(&text_color)
         .bind(&bg_color)
         .bind(form.enable_greentext.is_some());
