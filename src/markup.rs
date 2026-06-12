@@ -385,7 +385,11 @@ mod tests {
         let e = excerpt(long, 20);
         assert!(e.ends_with('…'), "got: {e}");
         assert!(!e.contains("thr…"), "should not chop mid-word: {e}");
-        assert!(e.chars().count() <= 21, "too long: {} chars in {e}", e.chars().count());
+        assert!(
+            e.chars().count() <= 21,
+            "too long: {} chars in {e}",
+            e.chars().count()
+        );
     }
 
     #[test]
